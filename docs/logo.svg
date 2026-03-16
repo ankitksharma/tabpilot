@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Background circle -->
+  <rect width="512" height="512" rx="112" fill="#6366f1"/>
+
+  <!-- Tab stack (3 overlapping rounded rects) -->
+  <rect x="100" y="160" width="240" height="160" rx="16" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="8"/>
+  <rect x="140" y="130" width="240" height="160" rx="16" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="8"/>
+  <rect x="180" y="100" width="240" height="160" rx="16" fill="white" stroke="white" stroke-width="8"/>
+
+  <!-- Pilot arrow / compass needle -->
+  <path d="M340 320 L400 400 L360 380 L340 420 L320 380 L280 400 Z" fill="white" stroke="white" stroke-width="4" stroke-linejoin="round"/>
+</svg>
