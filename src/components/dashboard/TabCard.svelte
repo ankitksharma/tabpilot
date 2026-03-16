@@ -1,0 +1,130 @@
+<script lang="ts">
+  import type { TabInfo } from "../../types/tab";
+  import { sendToBackground } from "../../lib/messaging/protocol";
+
+  let { tab }: { tab: TabInfo } = $props();
+
+  const domain = $derived.by(() => {
+    try {
+      return new URL(tab.url).hostname;
+    } catch {
+      return tab.url;
+    }
+  });
+
+  function activate() {
+    sendToBackground({ type: "ACTIVATE_TAB", tabId: tab.id });
+  }
+
+  function close(e: MouseEvent) {
+    e.stopPropagation();
+    sendToBackground({ type: "CLOSE_TAB", tabId: tab.id });
+  }
+
+  function toggleMute(e: MouseEvent) {
+    e.stopPropagation();
+    sendToBackground({
+      type: "MUTE_TAB",
+      tabId: tab.id,
+      muted: !tab.mutedInfo.muted,
+    });
+  }
+</script>
+
+<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+<div
+  onclick={activate}
+  class="group flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left transition-colors"
+  style="color: var(--text-primary); {tab.active ? `background-color: var(--bg-tertiary);` : ''}"
+  onmouseenter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }}
+  onmouseleave={(e) => { e.currentTarget.style.backgroundColor = tab.active ? 'var(--bg-tertiary)' : 'transparent'; }}
+  title={tab.url}
+  role="button"
+  tabindex="0"
+>
+  <!-- Favicon -->
+  <div class="flex h-4 w-4 shrink-0 items-center justify-center">
+    {#if tab.favIconUrl}
+      <img
+        src={tab.favIconUrl}
+        alt=""
+        class="h-4 w-4 rounded-sm"
+        onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+      />
+    {:else}
+      <div
+        class="h-3 w-3 rounded-full"
+        style="background-color: var(--text-muted);"
+      ></div>
+    {/if}
+  </div>
+
+  <!-- Title + domain -->
+  <div class="flex min-w-0 flex-1 flex-col">
+    <span
+      class="truncate text-sm leading-tight"
+      style="color: {tab.discarded ? 'var(--text-muted)' : 'var(--text-primary)'};"
+    >
+      {tab.title || "Untitled"}
+    </span>
+    <span class="truncate text-xs leading-tight" style="color: var(--text-muted);">
+      {domain}
+    </span>
+  </div>
+
+  <!-- Status indicators -->
+  <div class="flex shrink-0 items-center gap-1">
+    {#if tab.pinned}
+      <span
+        class="rounded px-1 py-0.5 text-xs"
+        style="color: var(--accent);"
+        title="Pinned"
+      >
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
+        </svg>
+      </span>
+    {/if}
+
+    {#if tab.audible}
+      <button
+        onclick={toggleMute}
+        class="rounded p-0.5 transition-colors"
+        style="color: var(--text-secondary);"
+        title={tab.mutedInfo.muted ? "Unmute tab" : "Mute tab"}
+      >
+        {#if tab.mutedInfo.muted}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/>
+          </svg>
+        {:else}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>
+          </svg>
+        {/if}
+      </button>
+    {/if}
+
+    {#if tab.discarded}
+      <span
+        class="text-xs"
+        style="color: var(--text-muted);"
+        title="Suspended"
+      >
+        zzz
+      </span>
+    {/if}
+
+    <!-- Close button -->
+    <button
+      onclick={close}
+      class="rounded p-0.5 opacity-0 transition-all group-hover:opacity-100"
+      style="color: var(--text-muted);"
+      title="Close tab"
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+</div>
