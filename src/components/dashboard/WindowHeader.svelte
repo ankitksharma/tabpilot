@@ -2,7 +2,7 @@
   import type { WindowInfo } from "../../types/tab";
   import { sendToBackground } from "../../lib/messaging/protocol";
 
-  let { window }: { window: WindowInfo } = $props();
+  let { window, index }: { window: WindowInfo; index: number } = $props();
 
   function closeWindow() {
     sendToBackground({ type: "CLOSE_WINDOW", windowId: window.id });
@@ -15,7 +15,7 @@
 >
   <div class="flex items-center gap-2">
     <span class="text-sm font-medium" style="color: var(--text-primary);">
-      Window {window.id}
+      Window {index + 1}
     </span>
     <span
       class="rounded px-1.5 py-0.5 text-xs"

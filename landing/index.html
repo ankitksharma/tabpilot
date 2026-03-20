@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TabPilot — Window & Tab Manager for Chrome</title>
+  <meta name="description" content="See every tab, organize in seconds, save sessions, and let AI sort the mess. A privacy-first Chrome extension for power users.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Instrument Serif', Georgia, serif;
+    }
+
+    /* ─── DARK THEME ─── */
+    [data-theme="dark"] {
+      --text: #e8e6e3;
+      --text-secondary: #9a9590;
+      --text-muted: #6b6560;
+      --bg: #0f0f11;
+      --bg-secondary: #1a1a1f;
+      --bg-card: #1e1e24;
+      --border: rgba(255,255,255,0.08);
+      --accent: #818cf8;
+      --accent-dim: rgba(129,140,248,0.12);
+      --nav-bg: rgba(15,15,17,0.85);
+      --btn-primary-text: #fff;
+      --hover-bg: rgba(255,255,255,0.05);
+      --mock-hover: rgba(255,255,255,0.04);
+      --mock-subtle: rgba(255,255,255,0.06);
+      --mock-tab-bg: rgba(255,255,255,0.02);
+    }
+
+    /* ─── LIGHT THEME ─── */
+    [data-theme="light"] {
+      --text: #1a1815;
+      --text-secondary: #6b6560;
+      --text-muted: #9a9590;
+      --bg: #faf9f7;
+      --bg-secondary: #f0efed;
+      --bg-card: #fff;
+      --border: rgba(0,0,0,0.08);
+      --accent: #6366f1;
+      --accent-dim: rgba(99,102,241,0.08);
+      --nav-bg: rgba(250,249,247,0.85);
+      --btn-primary-text: #fff;
+      --hover-bg: rgba(0,0,0,0.04);
+      --mock-hover: rgba(0,0,0,0.03);
+      --mock-subtle: rgba(0,0,0,0.05);
+      --mock-tab-bg: rgba(0,0,0,0.02);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    a { color: var(--accent); text-decoration: none; transition: opacity 0.2s; }
+    a:hover { opacity: 0.8; }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: var(--nav-bg);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+    .nav-brand {
+      font-family: var(--font-serif);
+      font-size: 22px; font-weight: normal; color: var(--text); letter-spacing: -0.02em;
+    }
+    .nav-right { display: flex; align-items: center; gap: 28px; }
+    .nav-right a { color: var(--text-secondary); font-size: 14px; font-weight: 500; }
+    .nav-right a:hover { color: var(--text); opacity: 1; }
+    .theme-toggle {
+      background: none; border: 1px solid var(--border); border-radius: 8px;
+      padding: 7px 10px; cursor: pointer; color: var(--text-secondary);
+      display: flex; align-items: center; transition: all 0.2s;
+    }
+    .theme-toggle:hover { border-color: var(--text-muted); color: var(--text); }
+    .theme-toggle svg { width: 16px; height: 16px; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 24px; border-radius: 8px;
+      background: var(--accent); color: #fff !important;
+      font-size: 14px; font-weight: 600;
+      border: none; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); color: #fff !important; }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 24px; border-radius: 8px;
+      background: var(--bg-card); color: var(--text);
+      font-size: 14px; font-weight: 500;
+      border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--text-muted); }
+
+    /* ─── HERO ─── */
+    .hero {
+      text-align: center;
+      padding: 160px 24px 100px;
+      max-width: 860px; margin: 0 auto;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 100px;
+      background: var(--accent-dim);
+      color: var(--accent); font-size: 13px; font-weight: 500;
+      margin-bottom: 32px;
+    }
+    .hero h1 {
+      font-family: var(--font-serif);
+      font-weight: normal;
+      font-size: clamp(44px, 6.5vw, 76px);
+      line-height: 1.08; letter-spacing: -0.03em;
+      color: var(--text); margin-bottom: 24px;
+    }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero p {
+      font-size: 18px; color: var(--text-secondary);
+      max-width: 540px; margin: 0 auto 40px; line-height: 1.7;
+    }
+    .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero-sub { margin-top: 16px; font-size: 13px; color: var(--text-muted); }
+
+    /* ─── PREVIEW ─── */
+    .preview { max-width: 1100px; margin: 0 auto 120px; padding: 0 24px; }
+    .preview-frame {
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .preview-titlebar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .preview-dot.red { background: #ff5f57; }
+    .preview-dot.yellow { background: #febc2e; }
+    .preview-dot.green { background: #28c840; }
+    .preview-content { padding: 24px; min-height: 400px; display: flex; gap: 16px; }
+    .preview-window {
+      flex: 1; border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-secondary); padding: 12px;
+      transition: background 0.3s;
+    }
+    .preview-window-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-window-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .preview-badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--accent-dim); color: var(--accent); }
+    .preview-tab {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 8px; border-radius: 6px;
+      margin-bottom: 2px; transition: background 0.15s;
+    }
+    .preview-tab:hover { background: var(--hover-bg); }
+    .preview-tab-icon { width: 14px; height: 14px; border-radius: 3px; background: var(--text-muted); flex-shrink: 0; }
+    .preview-tab-title { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .preview-tab-meta { font-size: 10px; color: var(--text-muted); margin-left: auto; flex-shrink: 0; }
+
+    /* ─── SELLING POINTS ─── */
+    .points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 900px; margin: 0 auto 140px; padding: 0 24px; }
+    .point { text-align: center; }
+    .point-icon {
+      width: 48px; height: 48px; border-radius: 12px; background: var(--accent-dim);
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+    }
+    .point-icon svg { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 1.8; }
+    .point h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .point p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ─── FEATURES ─── */
+    .feature {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+      max-width: 1100px; margin: 0 auto; padding: 80px 40px;
+      border-top: 1px solid var(--border);
+    }
+    .feature.reverse .feature-text { order: 2; }
+    .feature.reverse .feature-visual { order: 1; }
+    .feature-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 12px; }
+    .feature-text h2 {
+      font-family: var(--font-serif); font-weight: normal;
+      font-size: 36px; line-height: 1.15; letter-spacing: -0.025em; margin-bottom: 16px;
+    }
+    .feature-text p { font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 20px; }
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .feature-list li { font-size: 14px; color: var(--text-secondary); display: flex; align-items: center; gap: 10px; }
+    .feature-list li::before { content: ''; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); flex-shrink: 0; }
+    .feature-visual {
+      border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+      background: var(--bg-card); padding: 24px; min-height: 280px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.3s;
+    }
+
+    /* Mock components */
+    .mock-sidebar { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+    .mock-domain-group { margin-bottom: 8px; }
+    .mock-domain-header { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: default; }
+    .mock-domain-header:hover { background: var(--mock-hover); }
+    .mock-chevron { color: var(--text-muted); font-size: 10px; }
+    .mock-domain-icon { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+    .mock-domain-name { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+    .mock-domain-count { margin-left: auto; font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--mock-subtle); color: var(--text-muted); }
+    .mock-child-tab { display: flex; align-items: center; gap: 8px; padding: 5px 8px 5px 28px; border-radius: 4px; font-size: 11px; color: var(--text-muted); }
+    .mock-child-tab.active { color: var(--text); background: var(--mock-hover); }
+
+    .mock-dnd { width: 100%; }
+    .mock-dnd-cols { display: flex; gap: 12px; }
+    .mock-dnd-col { flex: 1; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); padding: 10px; }
+    .mock-dnd-col-title { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .mock-dnd-tab { padding: 6px 8px; border-radius: 5px; margin-bottom: 4px; font-size: 11px; color: var(--text-secondary); background: var(--mock-tab-bg); border: 1px solid transparent; }
+    .mock-dnd-tab.dragging { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); transform: rotate(-2deg); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+    .mock-dnd-arrow { display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 18px; padding: 0 4px; }
+
+    .mock-ai { width: 100%; }
+    .mock-ai-groups { display: flex; flex-direction: column; gap: 10px; }
+    .mock-ai-group { border-radius: 8px; border: 1px solid var(--border); padding: 12px; background: var(--bg-secondary); }
+    .mock-ai-group-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .mock-ai-group-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .mock-ai-confidence { font-size: 10px; padding: 2px 8px; border-radius: 4px; background: rgba(34,197,94,0.1); color: #22c55e; }
+    .mock-ai-tabs { display: flex; flex-direction: column; gap: 2px; }
+    .mock-ai-tab { font-size: 11px; color: var(--text-muted); padding: 2px 0; }
+
+    .mock-privacy { text-align: center; }
+    .mock-privacy-icon { width: 64px; height: 64px; border-radius: 16px; background: var(--accent-dim); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+    .mock-privacy-icon svg { width: 28px; height: 28px; stroke: var(--accent); fill: none; stroke-width: 1.8; }
+    .mock-privacy-checks { display: flex; flex-direction: column; gap: 8px; text-align: left; max-width: 240px; margin: 0 auto; }
+    .mock-privacy-check { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary); }
+    .mock-privacy-check::before { content: '\2713'; color: #22c55e; font-weight: 600; font-size: 14px; }
+
+    .mock-project-card { border-radius: 8px; border: 1px solid var(--border); padding: 12px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: space-between; transition: background 0.3s; }
+    .mock-project-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .mock-project-meta { font-size: 11px; color: var(--text-muted); }
+    .mock-project-open { font-size: 12px; color: var(--accent); cursor: pointer; }
+
+    .mock-dupe-card { border-radius: 8px; border: 1px solid var(--border); padding: 12px; }
+    .mock-dupe-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .mock-dupe-count { font-size: 12px; font-weight: 600; color: var(--text); }
+    .mock-dupe-close { font-size: 11px; color: #ef4444; cursor: pointer; }
+    .mock-dupe-keep { font-size: 11px; color: var(--text); margin-bottom: 2px; }
+    .mock-dupe-remove { font-size: 11px; color: var(--text-muted); text-decoration: line-through; }
+
+    /* ─── CTA ─── */
+    .final-cta { text-align: center; padding: 120px 24px; border-top: 1px solid var(--border); }
+    .final-cta h2 { font-family: var(--font-serif); font-weight: normal; font-size: clamp(36px, 5vw, 56px); line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 12px; }
+    .final-cta p { font-size: 16px; color: var(--text-secondary); margin-bottom: 36px; }
+
+    /* ─── FOOTER ─── */
+    footer { text-align: center; padding: 40px 24px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-muted); }
+    footer a { color: var(--text-muted); }
+    footer a:hover { color: var(--text-secondary); }
+
+    /* ─── ANIMATIONS ─── */
+    .fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      .nav-right a:not(.btn-primary):not(.theme-toggle) { display: none; }
+      .hero { padding: 120px 20px 60px; }
+      .hero p { font-size: 16px; }
+      .points { grid-template-columns: 1fr; gap: 32px; }
+      .feature { grid-template-columns: 1fr; gap: 32px; padding: 60px 20px; }
+      .feature.reverse .feature-text { order: 1; }
+      .feature.reverse .feature-visual { order: 2; }
+      .feature-text h2 { font-size: 28px; }
+      .preview-content { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-brand">
+      <svg width="24" height="24" viewBox="0 0 512 512" fill="none" style="vertical-align: -3px; margin-right: 8px;">
+        <rect width="512" height="512" rx="112" fill="#6366f1"/>
+        <rect x="100" y="160" width="240" height="160" rx="16" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="8"/>
+        <rect x="140" y="130" width="240" height="160" rx="16" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="8"/>
+        <rect x="180" y="100" width="240" height="160" rx="16" fill="white" stroke="white" stroke-width="8"/>
+        <path d="M340 320 L400 400 L360 380 L340 420 L320 380 L280 400 Z" fill="white" stroke="white" stroke-width="4" stroke-linejoin="round"/>
+      </svg>TabPilot
+    </div>
+    <div class="nav-right">
+      <a href="#features">Features</a>
+      <a href="#ai">AI</a>
+      <a href="#privacy">Privacy</a>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+      <a href="#" class="btn-primary" style="text-decoration:none;">
+        Install Extension
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero fade-in">
+    <div class="hero-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Free &amp; Open Source — No sign-up required
+    </div>
+    <h1>Open 150 tabs and <em>stay sane</em></h1>
+    <p>See every tab across every window. Organize in seconds, save sessions as projects, and let AI sort the mess. Privacy-first.</p>
+    <div class="hero-cta">
+      <a href="#" class="btn-primary" style="text-decoration:none;">
+        Add to Chrome
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#features" class="btn-secondary" style="text-decoration:none;">See features</a>
+    </div>
+    <p class="hero-sub">Works in Chrome, Edge, Brave — Manifest V3</p>
+  </section>
+
+  <!-- PREVIEW -->
+  <section class="preview fade-in">
+    <div class="preview-frame">
+      <div class="preview-titlebar">
+        <div class="preview-dot red"></div>
+        <div class="preview-dot yellow"></div>
+        <div class="preview-dot green"></div>
+        <span style="margin-left:12px;font-size:12px;color:var(--text-muted);">TabPilot Dashboard</span>
+      </div>
+      <div class="preview-content">
+        <div class="preview-window">
+          <div class="preview-window-header">
+            <span class="preview-window-title">Window 1</span>
+            <span class="preview-badge">focused</span>
+          </div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#4285f4;"></div><span class="preview-tab-title">Google Docs — Q4 Planning</span><span class="preview-tab-meta">zzz</span></div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#333;"></div><span class="preview-tab-title">GitHub — tabpilot/issues</span></div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#ff6b35;"></div><span class="preview-tab-title">Hacker News</span></div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#1da1f2;"></div><span class="preview-tab-title">Twitter / X — Home</span><span class="preview-tab-meta">&#9834;</span></div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#ea4335;"></div><span class="preview-tab-title">Gmail — Inbox (3)</span></div>
+        </div>
+        <div class="preview-window">
+          <div class="preview-window-header">
+            <span class="preview-window-title">Window 2</span>
+            <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--mock-subtle);color:var(--text-muted);">12</span>
+          </div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#ff9800;"></div><span class="preview-tab-title">Stack Overflow — Svelte 5 runes</span><span class="preview-tab-meta">zzz</span></div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#764abc;"></div><span class="preview-tab-title">MDN — Web APIs</span><span class="preview-tab-meta">zzz</span></div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#0acf83;"></div><span class="preview-tab-title">Figma — TabPilot Design</span></div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#333;"></div><span class="preview-tab-title">localhost:5173</span></div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#de5145;"></div><span class="preview-tab-title">Chrome DevTools</span><span class="preview-tab-meta">zzz</span></div>
+        </div>
+        <div class="preview-window">
+          <div class="preview-window-header">
+            <span class="preview-window-title">Window 3</span>
+            <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--mock-subtle);color:var(--text-muted);">8</span>
+          </div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#5865f2;"></div><span class="preview-tab-title">Discord — #general</span><span class="preview-tab-meta">&#9834;</span></div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#25d366;"></div><span class="preview-tab-title">WhatsApp Web</span></div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#ff4500;"></div><span class="preview-tab-title">Reddit — r/webdev</span><span class="preview-tab-meta">zzz</span></div>
+          <div class="preview-tab"><div class="preview-tab-icon" style="background:#1db954;"></div><span class="preview-tab-title">Spotify — Now Playing</span><span class="preview-tab-meta">&#9834;</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SELLING POINTS -->
+  <section class="points fade-in">
+    <div class="point">
+      <div class="point-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg></div>
+      <h3>Bird's-eye view</h3>
+      <p>See every tab across all windows in one multi-column dashboard.</p>
+    </div>
+    <div class="point">
+      <div class="point-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <h3>Privacy-first</h3>
+      <p>No data collection, no cloud, no accounts. Everything stays local.</p>
+    </div>
+    <div class="point">
+      <div class="point-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+      <h3>Save RAM</h3>
+      <p>Suspend inactive tabs automatically. Reclaim memory without losing context.</p>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <div id="features">
+    <section class="feature fade-in">
+      <div class="feature-text">
+        <div class="feature-label">Side Panel</div>
+        <h2>Vertical tabs, tree view</h2>
+        <p>A persistent sidebar showing your current window's tabs grouped by domain — like Arc, but for Chrome. Collapse domains, search instantly, close with one click.</p>
+        <ul class="feature-list">
+          <li>Grouped by domain with collapsible sections</li>
+          <li>Live search across all tabs</li>
+          <li>Works on left or right side</li>
+          <li>Real-time updates as tabs change</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div class="mock-sidebar">
+          <div class="mock-domain-group">
+            <div class="mock-domain-header"><span class="mock-chevron">&#9656;</span><div class="mock-domain-icon" style="background:#333;"></div><span class="mock-domain-name">github.com</span><span class="mock-domain-count">5</span></div>
+            <div class="mock-child-tab active">tabpilot — Pull request #42</div>
+            <div class="mock-child-tab">Issues &middot; tabpilot</div>
+            <div class="mock-child-tab">Actions &middot; CI/CD</div>
+            <div class="mock-child-tab">Settings &middot; Branches</div>
+            <div class="mock-child-tab">Wiki &middot; Architecture</div>
+          </div>
+          <div class="mock-domain-group">
+            <div class="mock-domain-header"><span class="mock-chevron">&#9656;</span><div class="mock-domain-icon" style="background:#4285f4;"></div><span class="mock-domain-name">google.com</span><span class="mock-domain-count">3</span></div>
+            <div class="mock-child-tab">Chrome Extensions docs</div>
+            <div class="mock-child-tab">Manifest V3 migration</div>
+            <div class="mock-child-tab">Gmail — Inbox</div>
+          </div>
+          <div class="mock-domain-group">
+            <div class="mock-domain-header"><span class="mock-chevron">&#9656;</span><div class="mock-domain-icon" style="background:#ff6b35;"></div><span class="mock-domain-name">stackoverflow.com</span><span class="mock-domain-count">2</span></div>
+          </div>
+          <div class="mock-domain-group">
+            <div class="mock-domain-header"><div class="mock-domain-icon" style="background:#1db954;"></div><span class="mock-domain-name">Spotify — Now Playing</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature reverse fade-in">
+      <div class="feature-text">
+        <div class="feature-label">Drag &amp; Drop</div>
+        <h2>Reorganize tabs in seconds</h2>
+        <p>Drag tabs between windows, reorder within a window, or drop onto a new window zone. Multi-select with Ctrl+click, then move in bulk.</p>
+        <ul class="feature-list">
+          <li>Drag between windows</li>
+          <li>Drop to create new window</li>
+          <li>Shift-click range select</li>
+          <li>Bulk close, mute, suspend</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div class="mock-dnd">
+          <div class="mock-dnd-cols">
+            <div class="mock-dnd-col">
+              <div class="mock-dnd-col-title">Window 1</div>
+              <div class="mock-dnd-tab">Google Docs</div>
+              <div class="mock-dnd-tab" style="opacity:0.4;border:1px dashed var(--border);">GitHub PR #42</div>
+              <div class="mock-dnd-tab">Stack Overflow</div>
+            </div>
+            <div class="mock-dnd-arrow">&rarr;</div>
+            <div class="mock-dnd-col">
+              <div class="mock-dnd-col-title">Window 2</div>
+              <div class="mock-dnd-tab">Figma Design</div>
+              <div class="mock-dnd-tab dragging">GitHub PR #42</div>
+              <div class="mock-dnd-tab">localhost:5173</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature fade-in">
+      <div class="feature-text">
+        <div class="feature-label">Session Projects</div>
+        <h2>Save now, restore later</h2>
+        <p>Save your entire workspace — all windows and tabs — as a named project. Restore it tomorrow with tabs suspended to avoid the reload storm.</p>
+        <ul class="feature-list">
+          <li>Named project snapshots</li>
+          <li>Restore suspended (saves RAM)</li>
+          <li>Export as JSON or CSV</li>
+          <li>Import to rebuild sessions</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div style="width:100%;display:flex;flex-direction:column;gap:10px;">
+          <div class="mock-project-card"><div><div class="mock-project-name">Q4 Research</div><div class="mock-project-meta">3 windows, 47 tabs</div></div><span class="mock-project-open">Open</span></div>
+          <div class="mock-project-card"><div><div class="mock-project-name">Client Demo</div><div class="mock-project-meta">1 window, 12 tabs</div></div><span class="mock-project-open">Open</span></div>
+          <div class="mock-project-card"><div><div class="mock-project-name">Morning Stack</div><div class="mock-project-meta">2 windows, 23 tabs</div></div><span class="mock-project-open">Open</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature reverse fade-in" id="ai">
+      <div class="feature-text">
+        <div class="feature-label">AI Workspaces</div>
+        <h2>Let AI organize the chaos</h2>
+        <p>Connect OpenAI, Claude, or Chrome's built-in AI. TabPilot sends only tab titles and domains — never page content — to suggest smart groupings.</p>
+        <ul class="feature-list">
+          <li>Auto-cluster related tabs</li>
+          <li>Suggested group names with confidence scores</li>
+          <li>Custom routing rules (domain/keyword/regex)</li>
+          <li>Multi-provider: OpenAI, Claude, Chrome AI</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div class="mock-ai">
+          <div class="mock-ai-groups">
+            <div class="mock-ai-group"><div class="mock-ai-group-header"><span class="mock-ai-group-name">Bali Trip Planning</span><span class="mock-ai-confidence">94%</span></div><div class="mock-ai-tabs"><div class="mock-ai-tab">Google Flights — Jakarta to Denpasar</div><div class="mock-ai-tab">Booking.com — Ubud Villas</div><div class="mock-ai-tab">TripAdvisor — Best restaurants Seminyak</div></div></div>
+            <div class="mock-ai-group"><div class="mock-ai-group-header"><span class="mock-ai-group-name">Frontend Development</span><span class="mock-ai-confidence">91%</span></div><div class="mock-ai-tabs"><div class="mock-ai-tab">Svelte 5 docs — Runes</div><div class="mock-ai-tab">Tailwind CSS — Utility classes</div><div class="mock-ai-tab">MDN — IntersectionObserver</div></div></div>
+            <div class="mock-ai-group"><div class="mock-ai-group-header"><span class="mock-ai-group-name">Quarterly Budget</span><span class="mock-ai-confidence">87%</span></div><div class="mock-ai-tabs"><div class="mock-ai-tab">Google Sheets — Q4 Budget</div><div class="mock-ai-tab">Notion — Finance tracker</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature fade-in">
+      <div class="feature-text">
+        <div class="feature-label">Duplicate Detection</div>
+        <h2>Kill the clutter</h2>
+        <p>Three detection modes find duplicates you didn't know you had. Close them in bulk with one click — and undo if you change your mind.</p>
+        <ul class="feature-list">
+          <li>Exact URL matching</li>
+          <li>Canonical URL (strips tracking params)</li>
+          <li>Title similarity (Levenshtein &gt; 0.9)</li>
+          <li>Bulk close with undo support</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div style="width:100%;display:flex;flex-direction:column;gap:10px;">
+          <div class="mock-dupe-card"><div class="mock-dupe-header"><span class="mock-dupe-count">3 tabs</span><span class="mock-dupe-close">Close dupes</span></div><div class="mock-dupe-keep">Keep: Chrome Extension Docs</div><div class="mock-dupe-remove">Dupe: Chrome Extension Docs</div><div class="mock-dupe-remove">Dupe: Chrome Extension Docs (?utm_source=...)</div></div>
+          <div class="mock-dupe-card"><div class="mock-dupe-header"><span class="mock-dupe-count">2 tabs</span><span class="mock-dupe-close">Close dupes</span></div><div class="mock-dupe-keep">Keep: React Docs — Hooks</div><div class="mock-dupe-remove">Dupe: React Documentation - Hooks</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature reverse fade-in" id="privacy">
+      <div class="feature-text">
+        <div class="feature-label">Privacy</div>
+        <h2>Your tabs, your data</h2>
+        <p>TabPilot processes everything locally. AI features send only metadata (titles and domains) — never page content. No accounts, no tracking, no cloud.</p>
+        <ul class="feature-list">
+          <li>All data stored in chrome.storage (local)</li>
+          <li>AI sends titles + domains only</li>
+          <li>No analytics or telemetry</li>
+          <li>Open source — audit the code</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div class="mock-privacy">
+          <div class="mock-privacy-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="mock-privacy-checks">
+            <div class="mock-privacy-check">No cloud storage</div>
+            <div class="mock-privacy-check">No user accounts</div>
+            <div class="mock-privacy-check">No tracking or analytics</div>
+            <div class="mock-privacy-check">No page content sent to AI</div>
+            <div class="mock-privacy-check">Fully open source</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- FINAL CTA -->
+  <section class="final-cta fade-in">
+    <h2>Open 150 tabs.<br>Stay in control.</h2>
+    <p>Free, private, and built for power users.</p>
+    <a href="#" class="btn-primary" style="text-decoration:none;">
+      Add to Chrome
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2026 TabPilot &nbsp;&middot;&nbsp; <a href="#">GitHub</a> &nbsp;&middot;&nbsp; <a href="#">Chrome Web Store</a></p>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('tabpilot-theme', next);
+      updateThemeIcon(next);
+    }
+
+    function updateThemeIcon(theme) {
+      const sun = document.querySelector('.icon-sun');
+      const moon = document.querySelector('.icon-moon');
+      if (theme === 'dark') {
+        sun.style.display = 'block';
+        moon.style.display = 'none';
+      } else {
+        sun.style.display = 'none';
+        moon.style.display = 'block';
+      }
+    }
+
+    // Init theme
+    const saved = localStorage.getItem('tabpilot-theme');
+    const preferred = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-theme', preferred);
+    updateThemeIcon(preferred);
+  </script>
+
+</body>
+</html>

@@ -45,6 +45,10 @@ export function filterAndSortWindows(windows: WindowInfo[]): WindowInfo[] {
     .filter((w) => w.tabs.length > 0 || !query.trim());
 }
 
+export function getVisibleTabs(windows: WindowInfo[]): TabInfo[] {
+  return filterAndSortWindows(windows).flatMap((w) => w.tabs);
+}
+
 export function getSearchState() {
   return {
     get query() { return query; },
@@ -52,5 +56,6 @@ export function getSearchState() {
     get sortMode() { return sortMode; },
     set sortMode(v: "default" | "alpha" | "domain") { sortMode = v; },
     filterAndSortWindows,
+    getVisibleTabs,
   };
 }

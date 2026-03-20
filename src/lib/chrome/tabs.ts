@@ -22,7 +22,17 @@ export async function moveTab(
   windowId: number,
   index: number,
 ): Promise<void> {
-  await chrome.tabs.move(tabId, { windowId, index });
+  // Ungroup the tab first — Chrome disallows moves that break group continuity
+  const tab = await chrome.tabs.get(tabId);
+  if (tab.groupId > 0) {
+    await chrome.tabs.ungroup(tabId);
+  }
+  try {
+    await chrome.tabs.move(tabId, { windowId, index });
+  } catch {
+    // Target index may land inside another group — fall back to end of window
+    await chrome.tabs.move(tabId, { windowId, index: -1 });
+  }
 }
 
 export async function discardTab(tabId: number): Promise<void> {
@@ -48,4 +58,17 @@ export async function createTab(
   url?: string,
 ): Promise<chrome.tabs.Tab> {
   return chrome.tabs.create({ windowId, url });
+}
+
+export async function groupTabs(
+  tabIds: number[],
+  title: string,
+  color?: chrome.tabGroups.ColorEnum,
+): Promise<number> {
+  const groupId = await chrome.tabs.group({ tabIds });
+  await chrome.tabGroups.update(groupId, {
+    title,
+    ...(color ? { color } : {}),
+  });
+  return groupId;
 }

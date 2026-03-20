@@ -1,8 +1,21 @@
 <script lang="ts">
   import type { TabInfo } from "../../types/tab";
   import { sendToBackground } from "../../lib/messaging/protocol";
+  import { getContextMenuState } from "../../lib/state/ui.svelte";
+  import { getSelectionState } from "../../lib/state/selection.svelte";
+  import { getDuplicatesState } from "../../lib/state/duplicates.svelte";
+  import { getTabState } from "../../lib/state/tabs.svelte";
+  import { getVisibleTabs } from "../../lib/state/search.svelte";
 
   let { tab }: { tab: TabInfo } = $props();
+
+  const ctx = getContextMenuState();
+  const selection = getSelectionState();
+  const dupes = getDuplicatesState();
+  const tabState = getTabState();
+
+  const isSelected = $derived(selection.isSelected(tab.id));
+  const isDuplicate = $derived(dupes.isDuplicate(tab.id));
 
   const domain = $derived.by(() => {
     try {
@@ -12,7 +25,21 @@
     }
   });
 
-  function activate() {
+  function handleClick(e: MouseEvent) {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      selection.toggle(tab.id);
+      return;
+    }
+    if (e.shiftKey) {
+      e.preventDefault();
+      selection.rangeSelect(tab.id, getVisibleTabs(tabState.windows));
+      return;
+    }
+    if (selection.count > 0) {
+      selection.toggle(tab.id);
+      return;
+    }
     sendToBackground({ type: "ACTIVATE_TAB", tabId: tab.id });
   }
 
@@ -29,19 +56,38 @@
       muted: !tab.mutedInfo.muted,
     });
   }
+
+  function onContextMenu(e: MouseEvent) {
+    ctx.openContextMenu(e, tab);
+  }
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div
-  onclick={activate}
-  class="group flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left transition-colors"
-  style="color: var(--text-primary); {tab.active ? `background-color: var(--bg-tertiary);` : ''}"
+  onclick={handleClick}
+  oncontextmenu={onContextMenu}
+  class="tab-card-draggable group flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left transition-colors"
+  style="color: var(--text-primary); {isSelected ? `background-color: color-mix(in srgb, var(--accent) 15%, transparent); outline: 1px solid var(--accent);` : tab.active ? `background-color: var(--bg-tertiary);` : ''} {isDuplicate ? `border-left: 2px solid var(--warning);` : ''}"
   onmouseenter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }}
   onmouseleave={(e) => { e.currentTarget.style.backgroundColor = tab.active ? 'var(--bg-tertiary)' : 'transparent'; }}
   title={tab.url}
   role="button"
   tabindex="0"
+  data-tab-id={tab.id}
+  data-window-id={tab.windowId}
 >
+  <!-- Drag handle -->
+  <div
+    class="tab-drag-handle flex shrink-0 cursor-grab items-center opacity-0 transition-opacity group-hover:opacity-60"
+    style="color: var(--text-muted);"
+  >
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="8" cy="4" r="2" /><circle cx="16" cy="4" r="2" />
+      <circle cx="8" cy="12" r="2" /><circle cx="16" cy="12" r="2" />
+      <circle cx="8" cy="20" r="2" /><circle cx="16" cy="20" r="2" />
+    </svg>
+  </div>
+
   <!-- Favicon -->
   <div class="flex h-4 w-4 shrink-0 items-center justify-center">
     {#if tab.favIconUrl}

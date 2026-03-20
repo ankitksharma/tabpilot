@@ -22,6 +22,24 @@ export interface WindowInfo {
   tabs: TabInfo[];
 }
 
+export interface TabGroupInfo {
+  id: number;
+  windowId: number;
+  title: string;
+  color: chrome.tabGroups.ColorEnum;
+  collapsed: boolean;
+}
+
+export function chromeTabGroupToInfo(group: chrome.tabGroups.TabGroup): TabGroupInfo {
+  return {
+    id: group.id,
+    windowId: group.windowId,
+    title: group.title ?? "",
+    color: group.color,
+    collapsed: group.collapsed,
+  };
+}
+
 export function chromeTabToTabInfo(tab: chrome.tabs.Tab): TabInfo {
   return {
     id: tab.id ?? -1,

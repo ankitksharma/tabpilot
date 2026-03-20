@@ -1,9 +1,10 @@
-import type { TabInfo, WindowInfo } from "../../types/tab";
+import type { TabInfo, TabGroupInfo, WindowInfo } from "../../types/tab";
 import type { BackgroundMessage, FullStatePayload } from "../../types/messages";
 import { requestFullState } from "../messaging/protocol";
 
 // --- Reactive state ---
 let windows = $state<WindowInfo[]>([]);
+let tabGroups = $state<TabGroupInfo[]>([]);
 let loading = $state(true);
 let error = $state<string | null>(null);
 
@@ -20,6 +21,7 @@ async function loadFullState(): Promise<void> {
     error = null;
     const state: FullStatePayload = await requestFullState();
     windows = state.windows;
+    tabGroups = state.tabGroups ?? [];
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
   } finally {
@@ -31,6 +33,7 @@ function handleBackgroundMessage(msg: BackgroundMessage): void {
   switch (msg.type) {
     case "FULL_STATE":
       windows = msg.payload.windows;
+      tabGroups = msg.payload.tabGroups ?? [];
       break;
 
     case "TAB_UPDATED": {
@@ -119,6 +122,23 @@ function handleBackgroundMessage(msg: BackgroundMessage): void {
     case "WINDOW_REMOVED":
       windows = windows.filter((w) => w.id !== msg.payload.windowId);
       break;
+
+    case "TAB_GROUP_UPDATED": {
+      const group = msg.payload.group;
+      const idx = tabGroups.findIndex((g) => g.id === group.id);
+      if (idx >= 0) {
+        const updated = [...tabGroups];
+        updated[idx] = group;
+        tabGroups = updated;
+      } else {
+        tabGroups = [...tabGroups, group];
+      }
+      break;
+    }
+
+    case "TAB_GROUP_REMOVED":
+      tabGroups = tabGroups.filter((g) => g.id !== msg.payload.groupId);
+      break;
   }
 }
 
@@ -134,6 +154,7 @@ export function getTabState() {
     get allTabs() { return allTabs; },
     get tabCount() { return tabCount; },
     get windowCount() { return windowCount; },
+    get tabGroups() { return tabGroups; },
     get loading() { return loading; },
     get error() { return error; },
     loadFullState,

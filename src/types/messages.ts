@@ -1,9 +1,10 @@
-import type { TabInfo, WindowInfo } from "./tab";
+import type { TabInfo, TabGroupInfo, WindowInfo } from "./tab";
 
 // --- Background → Dashboard messages ---
 
 export interface FullStatePayload {
   windows: WindowInfo[];
+  tabGroups: TabGroupInfo[];
 }
 
 export interface TabUpdatedPayload {
@@ -52,7 +53,9 @@ export type BackgroundMessage =
   | { type: "TAB_ATTACHED"; payload: TabAttachedPayload }
   | { type: "TAB_DETACHED"; payload: TabDetachedPayload }
   | { type: "WINDOW_REMOVED"; payload: WindowRemovedPayload }
-  | { type: "WINDOW_CREATED"; payload: WindowCreatedPayload };
+  | { type: "WINDOW_CREATED"; payload: WindowCreatedPayload }
+  | { type: "TAB_GROUP_UPDATED"; payload: { group: TabGroupInfo } }
+  | { type: "TAB_GROUP_REMOVED"; payload: { groupId: number } };
 
 // --- Dashboard → Background messages ---
 
@@ -65,4 +68,15 @@ export type DashboardMessage =
   | { type: "CREATE_WINDOW"; tabIds: number[] }
   | { type: "DISCARD_TAB"; tabId: number }
   | { type: "MUTE_TAB"; tabId: number; muted: boolean }
-  | { type: "PIN_TAB"; tabId: number; pinned: boolean };
+  | { type: "PIN_TAB"; tabId: number; pinned: boolean }
+  | { type: "CLOSE_TABS"; tabIds: number[] }
+  | { type: "DISCARD_TABS"; tabIds: number[] }
+  | { type: "MUTE_TABS"; tabs: { tabId: number; muted: boolean }[] }
+  | { type: "REOPEN_TABS"; tabs: { url: string; windowId?: number }[] }
+  | { type: "REOPEN_WINDOW"; urls: string[] }
+  | { type: "GROUP_TABS"; tabIds: number[]; title: string; color?: string }
+  | {
+      type: "AI_CLUSTER_TABS";
+      tabs: { id: number; title: string; domain: string }[];
+      config: { provider: string; apiKey: string; model: string };
+    };
