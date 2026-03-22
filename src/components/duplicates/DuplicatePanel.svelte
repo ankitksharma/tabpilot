@@ -3,11 +3,18 @@
   import { getTabState } from "../../lib/state/tabs.svelte";
   import { sendToBackground } from "../../lib/messaging/protocol";
   import { getUndoState } from "../../lib/state/undo.svelte";
+  import { getSearchState } from "../../lib/state/search.svelte";
   import type { DetectionMode } from "../../types/duplicate";
 
   const dupes = getDuplicatesState();
   const tabState = getTabState();
   const undo = getUndoState();
+  const search = getSearchState();
+
+  function filterCluster(cluster: { id: string; tabIds: number[] }) {
+    const title = getTabTitle(cluster.tabIds[0]);
+    search.setTabIdFilter(cluster.tabIds, `Dupes: ${title}`);
+  }
 
   const modes: { value: DetectionMode; label: string }[] = [
     { value: "exact", label: "Exact URL" },
@@ -118,13 +125,23 @@
             <span class="truncate text-xs font-medium" style="color: var(--text-secondary);">
               {cluster.tabIds.length} tabs
             </span>
-            <button
-              onclick={() => closeDuplicates(cluster.id)}
-              class="text-xs transition-colors"
-              style="color: var(--danger);"
-            >
-              Close dupes
-            </button>
+            <div class="flex items-center gap-2">
+              <button
+                onclick={() => filterCluster(cluster)}
+                class="text-xs transition-colors"
+                style="color: var(--accent);"
+                title="Show these tabs in dashboard"
+              >
+                Filter
+              </button>
+              <button
+                onclick={() => closeDuplicates(cluster.id)}
+                class="text-xs transition-colors"
+                style="color: var(--danger);"
+              >
+                Close dupes
+              </button>
+            </div>
           </div>
           <div class="flex flex-col gap-0.5">
             {#each cluster.tabIds as tabId, i}

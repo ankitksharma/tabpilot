@@ -4,21 +4,37 @@
   import { DEFAULT_AI_CONFIG } from "../../types/ai";
   import { getDomain } from "../../lib/services/url-normalize";
   import { sendToBackground } from "../../lib/messaging/protocol";
+  import { getSearchState } from "../../lib/state/search.svelte";
 
   const tabState = getTabState();
+  const search = getSearchState();
+
+  function filterSuggestion(suggestion: WorkspaceSuggestion) {
+    search.setTabIdFilter(suggestion.tabIds, `AI: ${suggestion.name}`);
+  }
 
   let config = $state<AIConfig>({ ...DEFAULT_AI_CONFIG });
   let suggestions = $state<WorkspaceSuggestion[]>([]);
   let loading = $state(false);
   let error = $state<string | null>(null);
 
+  const SUGGESTIONS_KEY = "tabpilot_ai_suggestions";
+
   $effect(() => {
-    chrome.storage.local.get("tabpilot_ai_config").then((result) => {
+    chrome.storage.local.get(["tabpilot_ai_config", SUGGESTIONS_KEY]).then((result) => {
       if (result.tabpilot_ai_config) {
         config = { ...DEFAULT_AI_CONFIG, ...result.tabpilot_ai_config };
       }
+      if (result[SUGGESTIONS_KEY]?.length) {
+        suggestions = result[SUGGESTIONS_KEY];
+      }
     });
   });
+
+  function saveSuggestions(data: WorkspaceSuggestion[]) {
+    suggestions = data;
+    chrome.storage.local.set({ [SUGGESTIONS_KEY]: data });
+  }
 
   async function generateSuggestions() {
     if (config.provider === "none") {
@@ -61,11 +77,11 @@
         return;
       }
 
-      suggestions = result.map((g) => ({
+      saveSuggestions(result.map((g) => ({
         name: g.name,
         tabIds: g.tabIds,
         confidence: g.confidence,
-      }));
+      })));
     } catch (e) {
       error = e instanceof Error ? e.message : "Failed to generate suggestions";
     } finally {
@@ -92,7 +108,7 @@
     for (let i = 0; i < suggestions.length; i++) {
       await applySuggestion(suggestions[i], i);
     }
-    suggestions = [];
+    saveSuggestions([]);
   }
 
   function getTabTitle(tabId: number): string {
@@ -152,6 +168,14 @@
               >
                 {Math.round(suggestion.confidence * 100)}%
               </span>
+              <button
+                onclick={() => filterSuggestion(suggestion)}
+                class="rounded px-1.5 py-0.5 text-xs font-medium opacity-0 transition-opacity group-hover/sg:opacity-100"
+                style="background-color: var(--bg-tertiary); color: var(--accent);"
+                title="Show these tabs in dashboard"
+              >
+                Filter
+              </button>
               <button
                 onclick={() => applySuggestion(suggestion, i)}
                 class="rounded px-1.5 py-0.5 text-xs font-medium opacity-0 transition-opacity group-hover/sg:opacity-100"

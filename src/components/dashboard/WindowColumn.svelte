@@ -126,69 +126,15 @@
     {#if search.sortMode === "domain" && domainGroups.length > 0}
       <!-- Domain grouping -->
       {#each domainGroups as group (group.domain)}
-        <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
         <div
-          class="group/hdr mt-1.5 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 transition-colors first:mt-0 hover:bg-[var(--bg-hover)]"
-          style="color: var(--text-muted);"
-          onclick={() => toggleCollapsed(`domain:${group.domain}`)}
-          role="button"
-          tabindex="0"
+          class="mt-2 flex flex-col rounded-md first:mt-0"
+          style="border-left: 3px solid var(--text-muted); margin-left: 2px;"
         >
-          <svg
-            width="10" height="10" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2.5"
-            class="shrink-0 transition-transform"
-            style="transform: rotate({isCollapsed(`domain:${group.domain}`) ? '0deg' : '90deg'});"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-          <div class="flex h-3.5 w-3.5 shrink-0 items-center justify-center">
-            {#if group.favicon}
-              <img
-                src={group.favicon}
-                alt=""
-                class="h-3.5 w-3.5 rounded-sm"
-                onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-              />
-            {:else}
-              <div class="h-2.5 w-2.5 rounded-full" style="background-color: var(--text-muted);"></div>
-            {/if}
-          </div>
-          <span class="min-w-0 flex-1 truncate text-xs font-medium">{group.domain}</span>
-          <span
-            class="shrink-0 rounded px-1 py-0.5 text-[10px]"
-            style="background-color: var(--bg-tertiary); color: var(--text-muted);"
-          >
-            {group.tabs.length}
-          </span>
-          <button
-            onclick={(e) => { e.stopPropagation(); closeGroupTabs(group.tabs); }}
-            class="shrink-0 rounded p-0.5 opacity-0 transition-opacity group-hover/hdr:opacity-100"
-            style="color: var(--text-muted);"
-            title="Close all {group.domain} tabs"
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 6L6 18M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-        {#if !isCollapsed(`domain:${group.domain}`)}
-          {#each group.tabs as tab (tab.id)}
-            <TabCard {tab} />
-          {/each}
-        {/if}
-      {/each}
-    {:else if hasAnyGroup}
-      <!-- Chrome tab group segments -->
-      {#each segments as seg, i (seg.groupId === -1 ? `ungrouped-${i}` : `group-${seg.groupId}`)}
-        {#if seg.kind === "group" && seg.groupInfo}
-          {@const groupKey = `chrome:${seg.groupId}`}
-          {@const color = GROUP_COLORS[seg.groupInfo.color] ?? 'var(--text-muted)'}
           <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
           <div
-            class="group/hdr mt-1.5 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 transition-colors first:mt-0 hover:bg-[var(--bg-hover)]"
-            style="border-left: 3px solid {color}; color: var(--text-secondary);"
-            onclick={() => toggleCollapsed(groupKey)}
+            class="group/hdr flex cursor-pointer items-center gap-2 px-2 py-1 transition-colors hover:bg-[var(--bg-hover)]"
+            style="color: var(--text-muted);"
+            onclick={() => toggleCollapsed(`domain:${group.domain}`)}
             role="button"
             tabindex="0"
           >
@@ -196,39 +142,107 @@
               width="10" height="10" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2.5"
               class="shrink-0 transition-transform"
-              style="transform: rotate({isCollapsed(groupKey) ? '0deg' : '90deg'});"
+              style="transform: rotate({isCollapsed(`domain:${group.domain}`) ? '0deg' : '90deg'});"
             >
               <path d="M9 18l6-6-6-6" />
             </svg>
-            <div
-              class="h-2.5 w-2.5 shrink-0 rounded-full"
-              style="background-color: {color};"
-            ></div>
-            <span class="min-w-0 flex-1 truncate text-xs font-medium">
-              {seg.groupInfo.title || "Unnamed group"}
-            </span>
+            <div class="flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+              {#if group.favicon}
+                <img
+                  src={group.favicon}
+                  alt=""
+                  class="h-3.5 w-3.5 rounded-sm"
+                  onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                />
+              {:else}
+                <div class="h-2.5 w-2.5 rounded-full" style="background-color: var(--text-muted);"></div>
+              {/if}
+            </div>
+            <span class="min-w-0 flex-1 truncate text-xs font-medium">{group.domain}</span>
             <span
               class="shrink-0 rounded px-1 py-0.5 text-[10px]"
               style="background-color: var(--bg-tertiary); color: var(--text-muted);"
             >
-              {seg.tabs.length}
+              {group.tabs.length}
             </span>
             <button
-              onclick={(e) => { e.stopPropagation(); closeGroupTabs(seg.tabs); }}
+              onclick={(e) => { e.stopPropagation(); closeGroupTabs(group.tabs); }}
               class="shrink-0 rounded p-0.5 opacity-0 transition-opacity group-hover/hdr:opacity-100"
               style="color: var(--text-muted);"
-              title="Close all tabs in group"
+              title="Close all {group.domain} tabs"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 6L6 18M6 6l12 12"/>
               </svg>
             </button>
           </div>
-          {#if !isCollapsed(groupKey)}
-            {#each seg.tabs as tab (tab.id)}
-              <TabCard {tab} />
-            {/each}
+          {#if !isCollapsed(`domain:${group.domain}`)}
+            <div class="flex flex-col gap-0.5 pb-0.5">
+              {#each group.tabs as tab (tab.id)}
+                <TabCard {tab} />
+              {/each}
+            </div>
           {/if}
+        </div>
+      {/each}
+    {:else if hasAnyGroup}
+      <!-- Chrome tab group segments -->
+      {#each segments as seg, i (seg.groupId === -1 ? `ungrouped-${i}` : `group-${seg.groupId}`)}
+        {#if seg.kind === "group" && seg.groupInfo}
+          {@const groupKey = `chrome:${seg.groupId}`}
+          {@const color = GROUP_COLORS[seg.groupInfo.color] ?? 'var(--text-muted)'}
+          <div
+            class="mt-2 flex flex-col rounded-md first:mt-0"
+            style="border-left: 3px solid {color}; margin-left: 2px;"
+          >
+            <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+            <div
+              class="group/hdr flex cursor-pointer items-center gap-2 px-2 py-1 transition-colors hover:bg-[var(--bg-hover)]"
+              style="color: var(--text-secondary);"
+              onclick={() => toggleCollapsed(groupKey)}
+              role="button"
+              tabindex="0"
+            >
+              <svg
+                width="10" height="10" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5"
+                class="shrink-0 transition-transform"
+                style="transform: rotate({isCollapsed(groupKey) ? '0deg' : '90deg'});"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+              <div
+                class="h-2.5 w-2.5 shrink-0 rounded-full"
+                style="background-color: {color};"
+              ></div>
+              <span class="min-w-0 flex-1 truncate text-xs font-medium">
+                {seg.groupInfo.title || "Unnamed group"}
+              </span>
+              <span
+                class="shrink-0 rounded px-1 py-0.5 text-[10px]"
+                style="background-color: var(--bg-tertiary); color: var(--text-muted);"
+              >
+                {seg.tabs.length}
+              </span>
+              <button
+                onclick={(e) => { e.stopPropagation(); closeGroupTabs(seg.tabs); }}
+                class="shrink-0 rounded p-0.5 opacity-0 transition-opacity group-hover/hdr:opacity-100"
+                style="color: var(--text-muted);"
+                title="Close all tabs in group"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            {#if !isCollapsed(groupKey)}
+              <div class="flex flex-col gap-0.5 pb-0.5">
+                {#each seg.tabs as tab (tab.id)}
+                  <TabCard {tab} />
+                {/each}
+              </div>
+            {/if}
+          </div>
         {:else}
           {#each seg.tabs as tab (tab.id)}
             <TabCard {tab} />

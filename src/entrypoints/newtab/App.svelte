@@ -5,6 +5,9 @@
   import BulkActionBar from "../../components/selection/BulkActionBar.svelte";
   import UndoToast from "../../components/common/UndoToast.svelte";
   import Sidebar from "../../components/layout/Sidebar.svelte";
+  import ProjectPanel from "../../components/projects/ProjectPanel.svelte";
+  import DuplicatePanel from "../../components/duplicates/DuplicatePanel.svelte";
+  import AIWorkspacePanel from "../../components/ai/AIWorkspacePanel.svelte";
   import { getTabState } from "../../lib/state/tabs.svelte";
   import { initKeyboard, registerBinding } from "../../lib/services/keyboard";
   import { getSelectionState } from "../../lib/state/selection.svelte";
@@ -22,6 +25,16 @@
   const undoState = getUndoState();
 
   let sidebarOpen = $state(false);
+
+  type TopTab = "tabs" | "projects" | "duplicates" | "ai";
+  let activeTab = $state<TopTab>("tabs");
+
+  const topTabs: { id: TopTab; label: string }[] = [
+    { id: "tabs", label: "Tabs" },
+    { id: "projects", label: "Projects" },
+    { id: "duplicates", label: "Dupes" },
+    { id: "ai", label: "AI" },
+  ];
 
   $effect(() => {
     tabState.loadFullState();
@@ -138,33 +151,63 @@
         onclick={() => (sidebarOpen = !sidebarOpen)}
         class="rounded-md p-1.5 transition-colors"
         style="background-color: var(--bg-tertiary); color: var(--text-secondary);"
-        title="Open sidebar"
+        title="Settings"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <path d="M15 3v18" />
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
         </svg>
       </button>
     </div>
   </header>
 
+  <!-- Top tabs -->
+  <div
+    class="sticky top-[53px] z-20 flex border-b px-6"
+    style="background-color: var(--bg-secondary); border-color: var(--border);"
+  >
+    {#each topTabs as t}
+      <button
+        onclick={() => (activeTab = t.id)}
+        class="px-4 py-2 text-sm font-medium transition-colors"
+        style="color: {activeTab === t.id ? 'var(--accent)' : 'var(--text-muted)'}; border-bottom: 2px solid {activeTab === t.id ? 'var(--accent)' : 'transparent'};"
+      >
+        {t.label}
+      </button>
+    {/each}
+  </div>
+
   <main class="flex-1 p-6">
-    {#if tabState.loading}
-      <div
-        class="flex items-center justify-center py-20"
-        style="color: var(--text-muted);"
-      >
-        Loading tabs...
+    {#if activeTab === "tabs"}
+      {#if tabState.loading}
+        <div
+          class="flex items-center justify-center py-20"
+          style="color: var(--text-muted);"
+        >
+          Loading tabs...
+        </div>
+      {:else if tabState.error}
+        <div
+          class="flex items-center justify-center py-20"
+          style="color: var(--danger);"
+        >
+          {tabState.error}
+        </div>
+      {:else}
+        <Dashboard windows={tabState.windows} />
+      {/if}
+    {:else if activeTab === "projects"}
+      <div class="mx-auto max-w-2xl">
+        <ProjectPanel />
       </div>
-    {:else if tabState.error}
-      <div
-        class="flex items-center justify-center py-20"
-        style="color: var(--danger);"
-      >
-        {tabState.error}
+    {:else if activeTab === "duplicates"}
+      <div class="mx-auto max-w-2xl">
+        <DuplicatePanel />
       </div>
-    {:else}
-      <Dashboard windows={tabState.windows} />
+    {:else if activeTab === "ai"}
+      <div class="mx-auto max-w-2xl">
+        <AIWorkspacePanel />
+      </div>
     {/if}
   </main>
 </div>

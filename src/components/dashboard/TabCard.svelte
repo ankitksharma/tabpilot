@@ -88,6 +88,14 @@
     </svg>
   </div>
 
+  <!-- Checkbox -->
+  <input
+    type="checkbox"
+    checked={isSelected}
+    onclick={(e) => { e.stopPropagation(); selection.toggle(tab.id); }}
+    class="h-3.5 w-3.5 shrink-0 cursor-pointer rounded accent-[var(--accent)] {isSelected || selection.count > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'} transition-opacity"
+  />
+
   <!-- Favicon -->
   <div class="flex h-4 w-4 shrink-0 items-center justify-center">
     {#if tab.favIconUrl}

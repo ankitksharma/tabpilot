@@ -1,9 +1,23 @@
 import type { TabInfo } from "../../types/tab";
 import type { DuplicateCluster, DetectionMode } from "../../types/duplicate";
 
+const STORAGE_KEY = "tabpilot_dupe_clusters";
+
 let clusters = $state<DuplicateCluster[]>([]);
 let mode = $state<DetectionMode>("exact");
 let scanning = $state(false);
+
+// Load persisted clusters on init
+chrome.storage.local.get(STORAGE_KEY).then((result) => {
+  if (result[STORAGE_KEY]?.length) {
+    clusters = result[STORAGE_KEY];
+  }
+});
+
+function persistClusters(data: DuplicateCluster[]) {
+  clusters = data;
+  chrome.storage.local.set({ [STORAGE_KEY]: data });
+}
 
 const duplicateTabIds = $derived(
   new Set(clusters.flatMap((c) => c.tabIds.slice(1))),
@@ -156,17 +170,19 @@ function scanTitleSimilarity(tabs: TabInfo[]): DuplicateCluster[] {
 
 function scan(tabs: TabInfo[]): void {
   scanning = true;
+  let result: DuplicateCluster[];
   switch (mode) {
     case "exact":
-      clusters = scanExact(tabs);
+      result = scanExact(tabs);
       break;
     case "canonical":
-      clusters = scanCanonical(tabs);
+      result = scanCanonical(tabs);
       break;
     case "title":
-      clusters = scanTitleSimilarity(tabs);
+      result = scanTitleSimilarity(tabs);
       break;
   }
+  persistClusters(result);
   scanning = false;
 }
 
@@ -179,7 +195,7 @@ function getClusterForTab(tabId: number): DuplicateCluster | undefined {
 }
 
 function clear(): void {
-  clusters = [];
+  persistClusters([]);
 }
 
 export function getDuplicatesState() {

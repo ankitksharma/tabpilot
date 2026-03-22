@@ -1,9 +1,11 @@
 <script lang="ts">
   import TabTree from "../../components/sidepanel/TabTree.svelte";
-  import type { TabInfo } from "../../types/tab";
+  import type { TabInfo, TabGroupInfo } from "../../types/tab";
+  import { chromeTabGroupToInfo } from "../../types/tab";
   import type { BackgroundMessage, FullStatePayload } from "../../types/messages";
 
   let tabs = $state<TabInfo[]>([]);
+  let tabGroups = $state<TabGroupInfo[]>([]);
   let loading = $state(true);
   let searchQuery = $state("");
 
@@ -23,10 +25,36 @@
       const response: FullStatePayload = await chrome.runtime.sendMessage({
         type: "GET_FULL_STATE",
       });
-      const focusedWindow = response.windows.find((w) => w.focused);
-      tabs = focusedWindow?.tabs ?? response.windows[0]?.tabs ?? [];
+      if (response?.windows) {
+        const focusedWindow = response.windows.find((w) => w.focused);
+        tabs = focusedWindow?.tabs ?? response.windows[0]?.tabs ?? [];
+      }
     } catch {
-      tabs = [];
+      // Fallback: query tabs directly
+      const allTabs = await chrome.tabs.query({ currentWindow: true });
+      tabs = allTabs.map((t) => ({
+        id: t.id ?? -1,
+        windowId: t.windowId ?? -1,
+        index: t.index,
+        title: t.title ?? "",
+        url: t.url ?? "",
+        favIconUrl: t.favIconUrl ?? "",
+        active: t.active,
+        pinned: t.pinned,
+        audible: t.audible ?? false,
+        mutedInfo: { muted: t.mutedInfo?.muted ?? false },
+        discarded: t.discarded ?? false,
+        groupId: t.groupId ?? -1,
+        lastActiveTs: t.active ? Date.now() : 0,
+      }));
+    }
+    // Always fetch tab groups directly — message passing can be unreliable
+    // when multiple extension pages have onMessage listeners
+    try {
+      const groups = await chrome.tabGroups.query({});
+      tabGroups = groups.map(chromeTabGroupToInfo);
+    } catch {
+      tabGroups = [];
     }
     loading = false;
   }
@@ -45,6 +73,23 @@
       case "FULL_STATE": {
         const focused = message.payload.windows.find((w) => w.focused);
         tabs = focused?.tabs ?? message.payload.windows[0]?.tabs ?? [];
+        tabGroups = message.payload.tabGroups ?? [];
+        break;
+      }
+      case "TAB_GROUP_UPDATED": {
+        const group = message.payload.group;
+        const idx = tabGroups.findIndex((g) => g.id === group.id);
+        if (idx >= 0) {
+          const updated = [...tabGroups];
+          updated[idx] = group;
+          tabGroups = updated;
+        } else {
+          tabGroups = [...tabGroups, group];
+        }
+        break;
+      }
+      case "TAB_GROUP_REMOVED": {
+        tabGroups = tabGroups.filter((g) => g.id !== message.payload.groupId);
         break;
       }
       case "TAB_UPDATED": {
@@ -129,7 +174,7 @@
         Loading...
       </div>
     {:else}
-      <TabTree tabs={filteredTabs} />
+      <TabTree tabs={filteredTabs} {tabGroups} />
     {/if}
   </div>
 </div>

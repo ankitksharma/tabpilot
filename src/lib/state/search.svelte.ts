@@ -2,15 +2,23 @@ import type { TabInfo, WindowInfo } from "../../types/tab";
 
 let query = $state("");
 let sortMode = $state<"default" | "alpha" | "domain">("default");
+let tabIdFilter = $state<Set<number> | null>(null);
+let tabIdFilterLabel = $state("");
 
 function filterTabs(tabs: TabInfo[], q: string): TabInfo[] {
-  if (!q.trim()) return tabs;
-  const lower = q.toLowerCase();
-  return tabs.filter(
-    (t) =>
-      t.title.toLowerCase().includes(lower) ||
-      t.url.toLowerCase().includes(lower),
-  );
+  let result = tabs;
+  if (tabIdFilter) {
+    result = result.filter((t) => tabIdFilter!.has(t.id));
+  }
+  if (q.trim()) {
+    const lower = q.toLowerCase();
+    result = result.filter(
+      (t) =>
+        t.title.toLowerCase().includes(lower) ||
+        t.url.toLowerCase().includes(lower),
+    );
+  }
+  return result;
 }
 
 function sortTabs(tabs: TabInfo[], mode: typeof sortMode): TabInfo[] {
@@ -42,11 +50,21 @@ export function filterAndSortWindows(windows: WindowInfo[]): WindowInfo[] {
       ...w,
       tabs: sortTabs(filterTabs(w.tabs, query), sortMode),
     }))
-    .filter((w) => w.tabs.length > 0 || !query.trim());
+    .filter((w) => w.tabs.length > 0 || (!query.trim() && !tabIdFilter));
 }
 
 export function getVisibleTabs(windows: WindowInfo[]): TabInfo[] {
   return filterAndSortWindows(windows).flatMap((w) => w.tabs);
+}
+
+export function setTabIdFilter(tabIds: number[], label: string) {
+  tabIdFilter = new Set(tabIds);
+  tabIdFilterLabel = label;
+}
+
+export function clearTabIdFilter() {
+  tabIdFilter = null;
+  tabIdFilterLabel = "";
 }
 
 export function getSearchState() {
@@ -55,6 +73,10 @@ export function getSearchState() {
     set query(v: string) { query = v; },
     get sortMode() { return sortMode; },
     set sortMode(v: "default" | "alpha" | "domain") { sortMode = v; },
+    get tabIdFilter() { return tabIdFilter; },
+    get tabIdFilterLabel() { return tabIdFilterLabel; },
+    setTabIdFilter,
+    clearTabIdFilter,
     filterAndSortWindows,
     getVisibleTabs,
   };
