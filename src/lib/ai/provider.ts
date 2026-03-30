@@ -93,6 +93,7 @@ class ClaudeProvider implements AIProviderInterface {
         "Content-Type": "application/json",
         "x-api-key": this.config.apiKey,
         "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
       },
       body: JSON.stringify({
         model: this.config.model || "claude-haiku-4-5",

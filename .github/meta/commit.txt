@@ -1,0 +1,14 @@
+feat: Chrome Web Store prep, Opera compatibility, and UI improvements
+
+- Merge tab navigation into top header bar (single row layout)
+- Add Opera/Chromium compatibility with feature detection for `tabGroups`, `sidePanel`
+- Add `action.onClicked` fallback for browsers without side panel support
+- Add `anthropic-dangerous-direct-browser-access` header for Claude API
+- Fix duplicate tab key errors in state management (`TAB_UPDATED`, `WINDOW_CREATED`)
+- Fix context menu duplicate ID error with `removeAll()` before create
+- Create Chrome Web Store listing assets: `store/description.txt`, `store/permissions.md`
+- Create privacy policy page: `docs/privacy.html`
+- Update landing pages with CWS placeholder links and privacy footer
+- Rewrite README with features, permissions, and browser compatibility
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>

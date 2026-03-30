@@ -1,0 +1,67 @@
+TabPilot is a window and tab manager for Chrome power users. See every open tab across all windows in one dashboard, reorganize with drag-and-drop, save sessions as projects, and optionally let AI suggest smart groupings.
+
+--- DASHBOARD ---
+
+Open the TabPilot dashboard to see a bird's-eye view of every Chrome window and tab. Each window appears as a column showing tab titles, favicons, audio indicators, and suspended status. The dashboard updates in real time as you open, close, or navigate tabs.
+
+--- SIDE PANEL ---
+
+TabPilot also runs as a Chrome side panel, giving you a persistent vertical tab bar grouped by domain. Collapse domain groups, search instantly, and close tabs without leaving your current page. It works like Arc's sidebar, but inside Chrome.
+
+--- DRAG AND DROP ---
+
+Reorder tabs within a window or drag them to another window. Drop tabs onto a "new window" zone to split them out. Use Ctrl+click or Shift+click to select multiple tabs and move, close, mute, or suspend them in bulk.
+
+--- SESSION PROJECTS ---
+
+Save your current set of windows and tabs as a named project. Restore it later with all tabs suspended by default, so you don't trigger dozens of page reloads at once. Export projects as JSON or CSV and re-import them on any machine.
+
+--- TAB SUSPENSION ---
+
+Suspend individual tabs or entire windows to free RAM and CPU. Suspended tabs keep their title and favicon but release their page resources. TabPilot can auto-suspend tabs after a configurable period of inactivity.
+
+--- AI WORKSPACES (OPTIONAL) ---
+
+Connect your own OpenAI or Anthropic API key, or use Chrome's built-in AI, to let TabPilot suggest tab groupings. The AI receives only tab titles and domain names — never page content, cookies, or browsing history. You review and apply the suggested groups with one click.
+
+Custom routing rules let you define your own grouping logic using domain patterns, keywords, or regular expressions. Rules run locally with no AI involved.
+
+--- DUPLICATE DETECTION ---
+
+Find duplicate tabs across all windows using three detection modes:
+- Exact URL match
+- Canonical URL (ignores tracking parameters like utm_source)
+- Title similarity (Levenshtein distance > 0.9)
+
+Close duplicates in bulk and undo if you change your mind.
+
+--- SEARCH AND SORT ---
+
+Live-filter all tabs by title or URL. Sort alphabetically, by domain, or by last accessed time. Quickly find the tab you need among hundreds.
+
+--- KEYBOARD SHORTCUTS ---
+
+Full keyboard navigation with configurable shortcuts. Default: Ctrl+Shift+M (Cmd+Shift+M on Mac) opens the dashboard.
+
+--- PRIVACY ---
+
+TabPilot collects no user data. There are no accounts, no analytics, no telemetry, and no cloud storage. All settings and saved sessions are stored locally in chrome.storage.
+
+The optional AI feature sends only tab titles and domain names to the API provider you configure with your own key. No page content, cookies, or browsing history is ever transmitted. You can use TabPilot without the AI feature entirely.
+
+TabPilot is open source: https://github.com/ankitksharma/tabpilot
+
+--- PERMISSIONS EXPLAINED ---
+
+- tabs: Read tab titles and URLs to display in the dashboard
+- tabGroups: Read and create Chrome tab groups
+- storage: Save user settings and session projects locally
+- alarms: Schedule auto-suspension of inactive tabs
+- sidePanel: Render the side panel UI
+- declarativeNetRequest: Strip Origin header for user-configured AI API calls (required by OpenAI/Anthropic CORS policies)
+
+Host permissions for api.openai.com and api.anthropic.com are used only when you explicitly configure an API key for the AI grouping feature.
+
+--- WORKS WITH ---
+
+Chrome, Edge, Brave, and other Chromium browsers. Manifest V3.

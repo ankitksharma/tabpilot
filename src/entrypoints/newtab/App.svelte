@@ -106,19 +106,28 @@
 
 <div class="flex min-h-screen flex-col">
   <header
-    class="sticky top-0 z-30 flex items-center justify-between border-b px-6 py-3"
+    class="sticky top-0 z-30 flex items-center justify-between border-b px-6"
     style="background-color: var(--bg-secondary); border-color: var(--border);"
   >
-    <div class="flex items-center gap-3">
-      <h1 class="text-lg font-semibold" style="color: var(--text-primary);">
+    <div class="flex items-center">
+      <h1 class="mr-3 text-lg font-semibold" style="color: var(--text-primary);">
         TabPilot
       </h1>
       <span
-        class="rounded-full px-2 py-0.5 text-xs font-medium"
+        class="mr-5 rounded-full px-2 py-0.5 text-xs font-medium"
         style="background-color: var(--bg-tertiary); color: var(--text-secondary);"
       >
         {tabState.tabCount} tabs &middot; {tabState.windowCount} windows
       </span>
+      {#each topTabs as t}
+        <button
+          onclick={() => (activeTab = t.id)}
+          class="px-3 py-3 text-sm font-medium transition-colors"
+          style="color: {activeTab === t.id ? 'var(--accent)' : 'var(--text-muted)'}; border-bottom: 2px solid {activeTab === t.id ? 'var(--accent)' : 'transparent'};"
+        >
+          {t.label}
+        </button>
+      {/each}
     </div>
 
     <div class="flex items-center gap-3">
@@ -160,22 +169,6 @@
       </button>
     </div>
   </header>
-
-  <!-- Top tabs -->
-  <div
-    class="sticky top-[53px] z-20 flex border-b px-6"
-    style="background-color: var(--bg-secondary); border-color: var(--border);"
-  >
-    {#each topTabs as t}
-      <button
-        onclick={() => (activeTab = t.id)}
-        class="px-4 py-2 text-sm font-medium transition-colors"
-        style="color: {activeTab === t.id ? 'var(--accent)' : 'var(--text-muted)'}; border-bottom: 2px solid {activeTab === t.id ? 'var(--accent)' : 'transparent'};"
-      >
-        {t.label}
-      </button>
-    {/each}
-  </div>
 
   <main class="flex-1 p-6">
     {#if activeTab === "tabs"}

@@ -7,11 +7,12 @@ export default defineConfig({
   manifest: {
     name: "TabPilot",
     description: "Window & Tab Manager — see, organize, and suspend all your tabs",
-    permissions: ["tabs", "tabGroups", "storage", "alarms", "sidePanel", "declarativeNetRequest"],
+    permissions: ["tabs", "tabGroups", "storage", "alarms", "sidePanel", "declarativeNetRequest", "contextMenus"],
     host_permissions: [
       "https://api.openai.com/*",
       "https://api.anthropic.com/*",
     ],
+    action: {},
     side_panel: {
       default_path: "sidepanel.html",
     },

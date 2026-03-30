@@ -39,14 +39,23 @@ function handleBackgroundMessage(msg: BackgroundMessage): void {
     case "TAB_UPDATED": {
       const tab = msg.payload.tab;
       let found = false;
+      // Remove tab from any window it currently exists in (handles cross-window moves),
+      // then update or add in the correct window
       windows = windows.map((w) => {
-        if (w.id !== tab.windowId) return w;
-        const existingIdx = w.tabs.findIndex((t) => t.id === tab.id);
-        if (existingIdx >= 0) {
-          found = true;
-          const newTabs = [...w.tabs];
-          newTabs[existingIdx] = tab;
-          return { ...w, tabs: newTabs };
+        if (w.id === tab.windowId) {
+          const existingIdx = w.tabs.findIndex((t) => t.id === tab.id);
+          if (existingIdx >= 0) {
+            found = true;
+            const newTabs = [...w.tabs];
+            newTabs[existingIdx] = tab;
+            return { ...w, tabs: newTabs };
+          }
+          return w;
+        }
+        // Remove from other windows to prevent duplicates
+        const hadTab = w.tabs.some((t) => t.id === tab.id);
+        if (hadTab) {
+          return { ...w, tabs: w.tabs.filter((t) => t.id !== tab.id) };
         }
         return w;
       });
@@ -115,9 +124,21 @@ function handleBackgroundMessage(msg: BackgroundMessage): void {
       break;
     }
 
-    case "WINDOW_CREATED":
-      windows = [...windows, msg.payload.window];
+    case "WINDOW_CREATED": {
+      const newWin = msg.payload.window;
+      const newTabIds = new Set(newWin.tabs.map((t) => t.id));
+      // Remove any tabs that appear in the new window from existing windows
+      // to prevent duplicate keys (Chrome fires WINDOW_CREATED before TAB_DETACHED)
+      windows = windows
+        .filter((w) => w.id !== newWin.id)
+        .map((w) => {
+          const hadOverlap = w.tabs.some((t) => newTabIds.has(t.id));
+          if (!hadOverlap) return w;
+          return { ...w, tabs: w.tabs.filter((t) => !newTabIds.has(t.id)) };
+        });
+      windows = [...windows, newWin];
       break;
+    }
 
     case "WINDOW_REMOVED":
       windows = windows.filter((w) => w.id !== msg.payload.windowId);

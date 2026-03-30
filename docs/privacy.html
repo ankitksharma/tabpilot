@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — TabPilot</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.7; color: #1a1a1a; background: #fff;
+      max-width: 720px; margin: 0 auto; padding: 48px 24px;
+    }
+    h1 { font-size: 28px; margin-bottom: 8px; }
+    h2 { font-size: 20px; margin-top: 36px; margin-bottom: 12px; }
+    p, li { font-size: 15px; margin-bottom: 12px; }
+    ul { padding-left: 24px; }
+    .subtitle { color: #666; font-size: 14px; margin-bottom: 36px; }
+    a { color: #6366f1; }
+    hr { border: none; border-top: 1px solid #e5e5e5; margin: 36px 0; }
+    code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy</h1>
+  <p class="subtitle">TabPilot — Window & Tab Manager for Chrome<br>Last updated: March 22, 2026</p>
+
+  <h2>Summary</h2>
+  <p>TabPilot does not collect, store, or transmit any personal data. All extension data stays on your device in Chrome's local storage.</p>
+
+  <h2>Data Collection</h2>
+  <p>TabPilot collects <strong>no user data</strong>. Specifically:</p>
+  <ul>
+    <li>No personally identifiable information</li>
+    <li>No browsing history</li>
+    <li>No page content</li>
+    <li>No cookies or authentication tokens</li>
+    <li>No analytics or telemetry</li>
+    <li>No crash reports</li>
+  </ul>
+
+  <h2>Local Storage</h2>
+  <p>TabPilot stores the following data locally on your device using <code>chrome.storage.local</code>:</p>
+  <ul>
+    <li>User preferences (theme, layout, auto-suspend timer settings)</li>
+    <li>Saved session projects (window and tab URLs/titles)</li>
+    <li>AI provider configuration (provider choice and API key, if configured)</li>
+    <li>Custom routing rules for tab grouping</li>
+  </ul>
+  <p>This data never leaves your device unless you explicitly use the export feature, which saves a file to your local filesystem.</p>
+
+  <h2>AI Feature (Optional)</h2>
+  <p>TabPilot includes an optional AI-powered tab grouping feature. If you choose to use it:</p>
+  <ul>
+    <li>You provide your own API key for OpenAI or Anthropic, or use Chrome's built-in AI (no key required)</li>
+    <li>TabPilot sends <strong>only tab titles and domain names</strong> to the AI provider you configure</li>
+    <li>No page content, cookies, browsing history, or personal data is transmitted</li>
+    <li>API calls go directly from your browser to the provider — TabPilot has no intermediary server</li>
+    <li>Your API key is stored locally and never shared with TabPilot or any third party</li>
+  </ul>
+  <p>You can use TabPilot without the AI feature. No data is sent to any external service unless you explicitly configure an AI provider.</p>
+
+  <h2>Permissions</h2>
+  <p>TabPilot requests only the Chrome permissions necessary for its features:</p>
+  <ul>
+    <li><code>tabs</code> — read tab titles and URLs to display in the dashboard</li>
+    <li><code>tabGroups</code> — read and create Chrome tab groups</li>
+    <li><code>storage</code> — persist settings and saved sessions locally</li>
+    <li><code>alarms</code> — schedule auto-suspension of inactive tabs</li>
+    <li><code>sidePanel</code> — render the side panel UI</li>
+    <li><code>declarativeNetRequest</code> — modify request headers for AI API calls (CORS)</li>
+  </ul>
+
+  <h2>Third-Party Services</h2>
+  <p>TabPilot does not integrate with any third-party analytics, advertising, or tracking services. The only external network requests are to AI API endpoints (OpenAI or Anthropic) when you explicitly configure and use the AI feature with your own API key.</p>
+
+  <h2>Data Sharing</h2>
+  <p>TabPilot does not sell, share, or transfer any user data to third parties. There is no user data to share.</p>
+
+  <h2>Children's Privacy</h2>
+  <p>TabPilot does not knowingly collect any information from children under the age of 13.</p>
+
+  <h2>Changes to This Policy</h2>
+  <p>If this privacy policy changes, the updated version will be published at this URL. The "last updated" date at the top will reflect the revision date.</p>
+
+  <h2>Open Source</h2>
+  <p>TabPilot is open source. You can audit the complete source code at <a href="https://github.com/ankitksharma/tabpilot">github.com/ankitksharma/tabpilot</a>.</p>
+
+  <h2>Contact</h2>
+  <p>For questions about this privacy policy, open an issue on the <a href="https://github.com/ankitksharma/tabpilot/issues">GitHub repository</a>.</p>
+
+  <hr>
+  <p style="color: #999; font-size: 13px;">&copy; 2026 TabPilot</p>
+</body>
+</html>
