@@ -21,12 +21,6 @@ import { createProvider } from "../lib/ai/provider";
 import type { AIConfig } from "../types/ai";
 import type { DashboardMessage, FullStatePayload } from "../types/messages";
 
-// Feature detection for APIs that Opera/other Chromium forks may not support
-const HAS_TAB_GROUPS = typeof chrome.tabGroups !== "undefined";
-const HAS_SIDE_PANEL =
-  typeof chrome.sidePanel !== "undefined" &&
-  typeof chrome.sidePanel.setPanelBehavior === "function";
-
 export default defineBackground(() => {
   // --- Message handler: dashboard → background ---
   chrome.runtime.onMessage.addListener(
@@ -125,30 +119,28 @@ export default defineBackground(() => {
     });
   });
 
-  // --- Tab group events (Chrome only, not supported in Opera) ---
+  // --- Tab group events ---
 
-  if (HAS_TAB_GROUPS) {
-    chrome.tabGroups.onCreated.addListener((group) => {
-      broadcastToUI({
-        type: "TAB_GROUP_UPDATED",
-        payload: { group: chromeTabGroupToInfo(group) },
-      });
+  chrome.tabGroups.onCreated.addListener((group) => {
+    broadcastToUI({
+      type: "TAB_GROUP_UPDATED",
+      payload: { group: chromeTabGroupToInfo(group) },
     });
+  });
 
-    chrome.tabGroups.onUpdated.addListener((group) => {
-      broadcastToUI({
-        type: "TAB_GROUP_UPDATED",
-        payload: { group: chromeTabGroupToInfo(group) },
-      });
+  chrome.tabGroups.onUpdated.addListener((group) => {
+    broadcastToUI({
+      type: "TAB_GROUP_UPDATED",
+      payload: { group: chromeTabGroupToInfo(group) },
     });
+  });
 
-    chrome.tabGroups.onRemoved.addListener((group) => {
-      broadcastToUI({
-        type: "TAB_GROUP_REMOVED",
-        payload: { groupId: group.id },
-      });
+  chrome.tabGroups.onRemoved.addListener((group) => {
+    broadcastToUI({
+      type: "TAB_GROUP_REMOVED",
+      payload: { groupId: group.id },
     });
-  }
+  });
 
   // --- Auto-suspend via alarms ---
   const SUSPEND_ALARM = "tabpilot-auto-suspend";
@@ -187,32 +179,6 @@ export default defineBackground(() => {
       // Settings not available yet
     }
   });
-
-  // --- Extension icon click behavior ---
-  if (HAS_SIDE_PANEL) {
-    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
-
-    chrome.runtime.onInstalled.addListener(() => {
-      chrome.contextMenus.removeAll(() => {
-        chrome.contextMenus.create({
-          id: "open-tab-manager",
-          title: "Open Tab Manager",
-          contexts: ["action"],
-        });
-      });
-    });
-
-    chrome.contextMenus.onClicked.addListener((info) => {
-      if (info.menuItemId === "open-tab-manager") {
-        chrome.tabs.create({ url: chrome.runtime.getURL("/newtab.html") });
-      }
-    });
-  } else {
-    // Opera and other browsers: icon click opens the dashboard directly
-    chrome.action.onClicked.addListener(() => {
-      chrome.tabs.create({ url: chrome.runtime.getURL("/newtab.html") });
-    });
-  }
 
   // --- Open dashboard command ---
   chrome.commands.onCommand.addListener((command) => {
@@ -261,9 +227,7 @@ export default defineBackground(() => {
 
 async function buildFullState(): Promise<FullStatePayload> {
   const windows = await getAllWindows();
-  const groups = HAS_TAB_GROUPS
-    ? (await chrome.tabGroups.query({})).map(chromeTabGroupToInfo)
-    : [];
+  const groups = (await chrome.tabGroups.query({})).map(chromeTabGroupToInfo);
   return { windows, tabGroups: groups };
 }
 
@@ -346,7 +310,6 @@ async function handleMessage(
       return;
     }
     case "GROUP_TABS":
-      if (!HAS_TAB_GROUPS) throw new Error("Tab groups not supported in this browser");
       await groupTabs(
         message.tabIds,
         message.title,
@@ -354,7 +317,6 @@ async function handleMessage(
       );
       return;
     case "ORGANIZE_WINDOW": {
-      if (!HAS_TAB_GROUPS) throw new Error("Tab groups not supported in this browser");
       const result = await organizeWindow(message.windowId, message.action);
       await broadcastFullState();
       return result;

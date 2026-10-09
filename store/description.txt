@@ -4,13 +4,9 @@ TabPilot is a window and tab manager for Chrome power users. See every open tab 
 
 Open the TabPilot dashboard to see a bird's-eye view of every Chrome window and tab. Each window appears as a column showing tab titles, favicons, audio indicators, and suspended status. The dashboard updates in real time as you open, close, or navigate tabs. Chrome tab groups are shown with their colors and names.
 
---- SIDE PANEL ---
-
-TabPilot also runs as a Chrome side panel for the current window. Search tabs, filter to tabs playing audio, suspended tabs, or ungrouped tabs, and close tabs without leaving the page you are on.
-
 --- ORGANIZE CHROME'S TAB STRIP ---
 
-Works with Chrome's own tabs, including native vertical tabs. From the side panel:
+Works with Chrome's own tabs, including native vertical tabs. Click the TabPilot toolbar icon to:
 - Group: put ungrouped tabs into Chrome tab groups by site, with a consistent color per site. Your custom rules (domain, keyword, or regex) can send matching tabs to a named group instead.
 - Sort: order tabs and groups alphabetically or by site.
 - Collapse: collapse every group except the one you are working in.
@@ -65,13 +61,10 @@ Privacy policy: https://ankitksharma.github.io/tabpilot/privacy.html
 - tabGroups: Read and create Chrome tab groups
 - storage: Save settings and session projects
 - alarms: Schedule auto-suspension of inactive tabs
-- sidePanel: Render the side panel UI
-- contextMenus: "Open Tab Manager" item in the toolbar icon's right-click menu
 - declarativeNetRequest: Remove the Origin header on requests to the AI APIs you configure (required by their CORS policies)
 
 Host permissions for api.openai.com and api.anthropic.com are used only when you configure an API key for the AI grouping feature.
 
 --- WORKS WITH ---
 
-Chrome, Edge, Brave, and other Chromium browsers. Manifest V3.
-Note: browsers that keep sleeping tabs outside Chromium's tab list (for example Dia and Arc) only expose loaded tabs to extensions, so TabPilot can only show those.
+Google Chrome. Manifest V3.

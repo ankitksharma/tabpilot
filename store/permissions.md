@@ -5,22 +5,16 @@ Use these when filling out the CWS submission form. Each permission requires a j
 ## Required Permissions
 
 ### `tabs`
-**Justification:** TabPilot is a tab manager. It reads tab titles, URLs, favicons, and audio status to display them in the dashboard and side panel. Without this permission, the extension cannot function.
+**Justification:** TabPilot is a tab manager. It reads tab titles, URLs, favicons, and audio status to display them in the dashboard and to group, sort, and collapse them in the tab strip. Without this permission, the extension cannot function.
 
 ### `tabGroups`
-**Justification:** TabPilot creates and manages Chrome tab groups as part of the AI grouping and manual organization features. It reads existing groups to display them and creates new groups when the user applies suggested groupings.
+**Justification:** TabPilot creates, renames, moves, and collapses Chrome tab groups when the user clicks Group, Sort, or Collapse in the toolbar popup, or applies AI grouping suggestions. It reads existing groups to display them and creates new groups when the user applies suggested groupings.
 
 ### `storage`
 **Justification:** TabPilot stores user preferences (theme, layout, auto-suspend timer) and saved session projects in chrome.storage.local. No data is sent externally.
 
 ### `alarms`
 **Justification:** TabPilot uses chrome.alarms to schedule automatic tab suspension. When a user configures an auto-suspend timer (e.g., suspend tabs inactive for 30 minutes), alarms trigger the suspension check.
-
-### `sidePanel`
-**Justification:** TabPilot provides a side panel UI that shows the current window's tabs grouped by domain, acting as a vertical tab bar. This is a core feature of the extension.
-
-### `contextMenus`
-**Justification:** TabPilot adds an "Open Tab Manager" item to the extension icon's right-click menu. This provides an alternative way to open the dashboard in browsers (like Opera) that override the new tab page and don't load the extension's new tab override.
 
 ### `declarativeNetRequest`
 **Justification:** When the user configures an AI provider (OpenAI or Anthropic) with their own API key, the browser's CORS policy blocks direct requests. TabPilot uses declarativeNetRequest to strip the Origin header on requests to the user-configured AI API endpoints only. No other network requests are modified.
