@@ -4,6 +4,7 @@
   import { DEFAULT_AI_CONFIG } from "../../types/ai";
   import { getDomain } from "../../lib/services/url-normalize";
   import { sendToBackground } from "../../lib/messaging/protocol";
+  import { createProvider } from "../../lib/ai/provider";
   import { getSearchState } from "../../lib/state/search.svelte";
 
   const tabState = getTabState();
@@ -19,16 +20,26 @@
   let error = $state<string | null>(null);
 
   const SUGGESTIONS_KEY = "tabpilot_ai_suggestions";
+  const CONFIG_KEY = "tabpilot_ai_config";
 
   $effect(() => {
-    chrome.storage.local.get(["tabpilot_ai_config", SUGGESTIONS_KEY]).then((result) => {
-      if (result.tabpilot_ai_config) {
-        config = { ...DEFAULT_AI_CONFIG, ...result.tabpilot_ai_config };
+    chrome.storage.local.get([CONFIG_KEY, SUGGESTIONS_KEY]).then((result) => {
+      if (result[CONFIG_KEY]) {
+        config = { ...DEFAULT_AI_CONFIG, ...result[CONFIG_KEY] };
       }
       if (result[SUGGESTIONS_KEY]?.length) {
         suggestions = result[SUGGESTIONS_KEY];
       }
     });
+
+    // Settings saves the provider/key while this panel stays mounted.
+    const onChanged = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area !== "local" || !changes[CONFIG_KEY]) return;
+      config = { ...DEFAULT_AI_CONFIG, ...changes[CONFIG_KEY].newValue };
+      error = null;
+    };
+    chrome.storage.onChanged.addListener(onChanged);
+    return () => chrome.storage.onChanged.removeListener(onChanged);
   });
 
   function saveSuggestions(data: WorkspaceSuggestion[]) {
@@ -52,6 +63,17 @@
           title: t.title,
           domain: getDomain(t.url),
         }));
+
+      // Chrome's Prompt API is not exposed to service workers, so it runs in this page.
+      if (config.provider === "chrome-ai") {
+        const groups = await createProvider(config)!.clusterTabs(tabs);
+        if (groups.length === 0) {
+          error = "AI returned no suggestions. Try again.";
+          return;
+        }
+        saveSuggestions(groups);
+        return;
+      }
 
       // Route through background script — extension pages can't fetch external APIs (CSP)
       const result = await sendToBackground<
