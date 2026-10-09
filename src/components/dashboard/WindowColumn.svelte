@@ -140,7 +140,7 @@
   >
     {#if search.sortMode === "domain" && domainGroups.length > 0}
       <!-- Domain grouping -->
-      {#each domainGroups as group (group.domain)}
+      {#each domainGroups as group, i (`${i}:${group.domain}`)}
         <div
           class="mt-2 flex flex-col rounded-md first:mt-0"
           style="border-left: 3px solid var(--text-muted); margin-left: 2px;"
@@ -202,7 +202,7 @@
       {/each}
     {:else if hasAnyGroup}
       <!-- Chrome tab group segments -->
-      {#each segments as seg, i (seg.groupId === -1 ? `ungrouped-${i}` : `group-${seg.groupId}`)}
+      {#each segments as seg, i (`${i}:${seg.groupId}`)}
         {#if seg.kind === "group" && seg.groupInfo}
           {@const groupKey = `chrome:${seg.groupId}`}
           {@const color = GROUP_COLORS[seg.groupInfo.color] ?? 'var(--text-muted)'}

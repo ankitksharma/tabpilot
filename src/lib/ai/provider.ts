@@ -148,6 +148,8 @@ class ChromeAIProvider implements AIProviderInterface {
     // "downloadable"/"downloading": create() starts or waits for the model download.
     const session = await LanguageModel.create({
       initialPrompts: [{ role: "system", content: SYSTEM_PROMPT }],
+      expectedInputs: [{ type: "text", languages: ["en"] }],
+      expectedOutputs: [{ type: "text", languages: ["en"] }],
     });
     try {
       const result: string = await session.prompt(buildUserPrompt(tabs), {
