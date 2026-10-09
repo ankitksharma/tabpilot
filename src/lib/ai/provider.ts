@@ -117,20 +117,49 @@ class ClaudeProvider implements AIProviderInterface {
   }
 }
 
+// JSON schema passed to the Prompt API so the on-device model returns parseable output.
+const GROUPS_SCHEMA = {
+  type: "array",
+  items: {
+    type: "object",
+    properties: {
+      name: { type: "string" },
+      tabIds: { type: "array", items: { type: "integer" } },
+      confidence: { type: "number" },
+    },
+    required: ["name", "tabIds", "confidence"],
+  },
+};
+
+// Chrome built-in AI (Prompt API, global `LanguageModel`, Chrome 138+). Must run in
+// an extension page, not the service worker.
 class ChromeAIProvider implements AIProviderInterface {
   async clusterTabs(
     tabs: { id: number; title: string; domain: string }[],
   ) {
-    // Chrome built-in AI (Prompt API) — only available in Chrome 128+
-    const ai = (globalThis as any).ai;
-    if (!ai?.languageModel) {
-      throw new Error("Chrome AI not available");
+    const LanguageModel = (globalThis as any).LanguageModel;
+    if (!LanguageModel) {
+      throw new Error("Chrome Built-in AI is not available in this browser (requires Chrome 138+ on a supported device).");
     }
-    const session = await ai.languageModel.create({
-      systemPrompt: SYSTEM_PROMPT,
+    const availability: string = await LanguageModel.availability();
+    if (availability === "unavailable") {
+      throw new Error("Chrome Built-in AI is unavailable on this device. Check chrome://on-device-internals.");
+    }
+    // "downloadable"/"downloading": create() starts or waits for the model download.
+    const session = await LanguageModel.create({
+      initialPrompts: [{ role: "system", content: SYSTEM_PROMPT }],
     });
-    const result = await session.prompt(buildUserPrompt(tabs));
-    session.destroy();
-    return parseResponse(result);
+    try {
+      const result: string = await session.prompt(buildUserPrompt(tabs), {
+        responseConstraint: GROUPS_SCHEMA,
+      });
+      const groups = parseResponse(result);
+      if (groups.length === 0 && result) {
+        throw new Error(`Failed to parse Chrome AI response: ${result.slice(0, 200)}`);
+      }
+      return groups;
+    } finally {
+      session.destroy();
+    }
   }
 }
