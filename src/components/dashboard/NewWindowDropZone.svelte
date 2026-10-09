@@ -1,6 +1,5 @@
 <script lang="ts">
   import Sortable from "sortablejs";
-  import { sendToBackground } from "../../lib/messaging/protocol";
 
   let dropZoneEl: HTMLDivElement;
   let dragging = $state(false);
@@ -23,17 +22,13 @@
   $effect(() => {
     if (!dropZoneEl) return;
 
+    // The source list's onEnd (lib/services/sortable.ts) handles drops here,
+    // including multi-select; this instance only accepts the drop target.
     const instance = Sortable.create(dropZoneEl, {
       group: {
         name: "tabpilot-tabs",
         put: true,
         pull: false,
-      },
-      onAdd(evt) {
-        const tabId = Number(evt.item.dataset.tabId);
-        if (!tabId || isNaN(tabId)) return;
-        sendToBackground({ type: "CREATE_WINDOW", tabIds: [tabId] });
-        evt.item.remove();
       },
     });
 
@@ -42,7 +37,7 @@
 </script>
 
 <div
-  class="fixed right-0 top-0 z-40 flex h-full items-center justify-center transition-all duration-300"
+  class="new-window-drop-zone fixed right-0 top-0 z-40 flex h-full items-center justify-center transition-all duration-300"
   style="
     width: {dragging ? (hovering ? '120px' : '48px') : '0px'};
     opacity: {dragging ? 1 : 0};

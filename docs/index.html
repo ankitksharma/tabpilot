@@ -314,8 +314,8 @@
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
       </button>
-      <a href="https://chromewebstore.google.com/detail/tabpilot/TODO_EXTENSION_ID" class="btn-primary" style="text-decoration:none;">
-        Add to Chrome
+      <a href="https://github.com/ankitksharma/tabpilot" data-store-link class="btn-primary" style="text-decoration:none;">
+        <span data-store-label>Add to Chrome</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
     </div>
@@ -330,13 +330,13 @@
     <h1>Open 150 tabs and <em>stay sane</em></h1>
     <p>See every tab across every window. Organize in seconds, save sessions as projects, and let AI sort the mess. Privacy-first.</p>
     <div class="hero-cta">
-      <a href="https://chromewebstore.google.com/detail/tabpilot/TODO_EXTENSION_ID" class="btn-primary" style="text-decoration:none;">
-        Add to Chrome — Free
+      <a href="https://github.com/ankitksharma/tabpilot" data-store-link class="btn-primary" style="text-decoration:none;">
+        <span data-store-label>Add to Chrome — Free</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
       <a href="#features" class="btn-secondary" style="text-decoration:none;">See features</a>
     </div>
-    <p class="hero-sub">Works in Chrome, Edge, Brave — Manifest V3</p>
+    <p class="hero-sub">For Google Chrome — Manifest V3</p>
   </section>
 
   <!-- PREVIEW -->
@@ -408,14 +408,14 @@
   <div id="features">
     <section class="feature fade-in">
       <div class="feature-text">
-        <div class="feature-label">Side Panel</div>
-        <h2>Vertical tabs, tree view</h2>
-        <p>A persistent sidebar showing your current window's tabs grouped by domain — like Arc, but for Chrome. Collapse domains, search instantly, close with one click.</p>
+        <div class="feature-label">Vertical Tabs</div>
+        <h2>Tidy Chrome's own tabs</h2>
+        <p>No extra sidebar. TabPilot organizes Chrome's tab strip itself, including native vertical tabs. Click the toolbar icon to put loose tabs into Chrome tab groups by site or by your own rules, sort the strip, or collapse the groups you aren't using — and Undo puts everything back.</p>
         <ul class="feature-list">
-          <li>Grouped by domain with collapsible sections</li>
-          <li>Live search across all tabs</li>
-          <li>Works on left or right side</li>
-          <li>Real-time updates as tabs change</li>
+          <li>Group by site or custom rules (domain, keyword, regex)</li>
+          <li>Sort tabs and groups A–Z or by site</li>
+          <li>Collapse every group but the current one</li>
+          <li>Your own groups and pinned tabs stay put</li>
         </ul>
       </div>
       <div class="feature-visual">
@@ -448,12 +448,12 @@
       <div class="feature-text">
         <div class="feature-label">Drag &amp; Drop</div>
         <h2>Reorganize tabs in seconds</h2>
-        <p>Drag tabs between windows, reorder within a window, or drop onto a new window zone. Multi-select with Ctrl+click, then move in bulk.</p>
+        <p>Drag tabs between windows, reorder within a window, or drop a tab onto the new window zone. Multi-select with Ctrl+click or Shift+click, then act on all of them at once.</p>
         <ul class="feature-list">
           <li>Drag between windows</li>
-          <li>Drop to create new window</li>
+          <li>Drop to create a new window</li>
           <li>Shift-click range select</li>
-          <li>Bulk close, mute, suspend</li>
+          <li>Bulk close, mute, suspend, with undo</li>
         </ul>
       </div>
       <div class="feature-visual">
@@ -481,12 +481,12 @@
       <div class="feature-text">
         <div class="feature-label">Session Projects</div>
         <h2>Save now, restore later</h2>
-        <p>Save your entire workspace — all windows and tabs — as a named project. Restore it tomorrow with tabs suspended to avoid the reload storm.</p>
+        <p>Save your entire workspace — all windows and tabs — as a named project, and reopen it tomorrow in one click.</p>
         <ul class="feature-list">
           <li>Named project snapshots</li>
-          <li>Restore suspended (saves RAM)</li>
-          <li>Export as JSON or CSV</li>
-          <li>Import to rebuild sessions</li>
+          <li>One-click reopen</li>
+          <li>Export projects as JSON</li>
+          <li>Export open windows as JSON or CSV</li>
         </ul>
       </div>
       <div class="feature-visual">
@@ -502,12 +502,12 @@
       <div class="feature-text">
         <div class="feature-label">AI Workspaces</div>
         <h2>Let AI organize the chaos</h2>
-        <p>Connect OpenAI, Claude, or Chrome's built-in AI. TabPilot sends only tab titles and domains — never page content — to suggest smart groupings.</p>
+        <p>Connect OpenAI or Claude with your own API key. TabPilot sends only tab titles and domains — never full URLs or page content — to suggest smart groupings.</p>
         <ul class="feature-list">
           <li>Auto-cluster related tabs</li>
           <li>Suggested group names with confidence scores</li>
-          <li>Custom routing rules (domain/keyword/regex)</li>
-          <li>Multi-provider: OpenAI, Claude, Chrome AI</li>
+          <li>Apply as Chrome tab groups in one click</li>
+          <li>Requests go straight to the provider, no middleman</li>
         </ul>
       </div>
       <div class="feature-visual">
@@ -529,7 +529,7 @@
         <ul class="feature-list">
           <li>Exact URL matching</li>
           <li>Canonical URL (strips tracking params)</li>
-          <li>Title similarity (Levenshtein &gt; 0.9)</li>
+          <li>Similar titles on the same site</li>
           <li>Bulk close with undo support</li>
         </ul>
       </div>
@@ -545,9 +545,9 @@
       <div class="feature-text">
         <div class="feature-label">Privacy</div>
         <h2>Your tabs, your data</h2>
-        <p>TabPilot processes everything locally. AI features send only metadata (titles and domains) — never page content. No accounts, no tracking, no cloud.</p>
+        <p>TabPilot has no servers. Your sessions and settings live in Chrome's own extension storage. AI features send only titles and domains — never page content. No accounts, no tracking.</p>
         <ul class="feature-list">
-          <li>All data stored in chrome.storage (local)</li>
+          <li>Data kept in Chrome's extension storage</li>
           <li>AI sends titles + domains only</li>
           <li>No analytics or telemetry</li>
           <li>Open source — audit the code</li>
@@ -557,7 +557,7 @@
         <div class="mock-privacy">
           <div class="mock-privacy-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
           <div class="mock-privacy-checks">
-            <div class="mock-privacy-check">No cloud storage</div>
+            <div class="mock-privacy-check">No TabPilot servers</div>
             <div class="mock-privacy-check">No user accounts</div>
             <div class="mock-privacy-check">No tracking or analytics</div>
             <div class="mock-privacy-check">No page content sent to AI</div>
@@ -572,18 +572,28 @@
   <section class="final-cta fade-in">
     <h2>Open 150 tabs.<br>Stay in control.</h2>
     <p>Free, private, and built for power users.</p>
-    <a href="https://chromewebstore.google.com/detail/tabpilot/TODO_EXTENSION_ID" class="btn-primary" style="text-decoration:none;">
-      Add to Chrome — Free
+    <a href="https://github.com/ankitksharma/tabpilot" data-store-link class="btn-primary" style="text-decoration:none;">
+      <span data-store-label>Add to Chrome — Free</span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </a>
   </section>
 
   <!-- FOOTER -->
   <footer>
-    <p>&copy; 2026 TabPilot &nbsp;&middot;&nbsp; <a href="https://github.com/ankitksharma/tabpilot">GitHub</a> &nbsp;&middot;&nbsp; <a href="https://chromewebstore.google.com/detail/tabpilot/TODO_EXTENSION_ID">Chrome Web Store</a> &nbsp;&middot;&nbsp; <a href="privacy.html">Privacy</a></p>
+    <p>&copy; 2026 TabPilot &nbsp;&middot;&nbsp; <a href="https://github.com/ankitksharma/tabpilot">GitHub</a> <span data-store-footer hidden>&nbsp;&middot;&nbsp; <a href="#" data-store-link>Chrome Web Store</a></span> &nbsp;&middot;&nbsp; <a href="privacy.html">Privacy</a></p>
   </footer>
 
   <script>
+    // Set to the Chrome Web Store listing URL once the item is published.
+    // While empty, install buttons link to the GitHub repository.
+    const STORE_URL = "";
+    if (STORE_URL) {
+      document.querySelectorAll('[data-store-link]').forEach((a) => { a.href = STORE_URL; });
+      document.querySelector('[data-store-footer]').hidden = false;
+    } else {
+      document.querySelectorAll('[data-store-label]').forEach((el) => { el.textContent = 'Get it on GitHub'; });
+    }
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) entry.target.classList.add('visible');

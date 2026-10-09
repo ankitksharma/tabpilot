@@ -161,10 +161,28 @@ function handleBackgroundMessage(msg: BackgroundMessage): void {
       tabGroups = tabGroups.filter((g) => g.id !== msg.payload.groupId);
       break;
   }
+  windows = normalize(windows);
 }
 
 function reindex(tabs: TabInfo[]): TabInfo[] {
   return tabs.map((t, i) => ({ ...t, index: i }));
+}
+
+// Normalize the window list so each tab.id appears at most once globally.
+// During the chrome-event burst that follows a move, TAB_ATTACHED can fire
+// before TAB_DETACHED (or vice versa), leaving the same id present in two
+// windows for a tick. Without this pass the keyed {#each tabs} crashes.
+function normalize(ws: WindowInfo[]): WindowInfo[] {
+  const seen = new Set<number>();
+  return ws.map((w) => {
+    const filtered: TabInfo[] = [];
+    for (const t of w.tabs) {
+      if (t.id <= 0 || seen.has(t.id)) continue;
+      seen.add(t.id);
+      filtered.push(t);
+    }
+    return filtered.length === w.tabs.length ? w : { ...w, tabs: filtered };
+  });
 }
 
 // --- Exports ---

@@ -1,11 +1,11 @@
 # TabPilot
 
-Window & Tab Manager for Chrome, Edge, Brave, and other Chromium browsers.
+Window & Tab Manager for Google Chrome.
 
 ## Features
 
 - **Bird's-eye dashboard** — see every tab across all windows in a multi-column layout
-- **Side panel** — vertical tab bar grouped by domain, like Arc but for Chrome
+- **Organize Chrome's tab strip** (toolbar popup) — group tabs into native Chrome tab groups by site or routing rules, sort A–Z or by site, collapse inactive groups, undo; works with Chrome's native vertical tabs
 - **Drag-and-drop** — reorder tabs, move between windows, or drop to create a new window
 - **Session projects** — save/restore workspaces with tabs suspended to avoid reload storms
 - **Tab suspension** — suspend tabs manually or automatically after inactivity to free RAM
@@ -34,14 +34,9 @@ pnpm zip          # packaged zip → .output/tabpilot-<version>-chrome.zip
 
 Load the unpacked extension from `.output/chrome-mv3/` in `chrome://extensions` with developer mode enabled.
 
-## Browser Compatibility
+## Browser Support
 
-| Browser | Status | Notes |
-|---------|--------|-------|
-| Chrome  | Full support | New tab override, side panel, tab groups |
-| Edge    | Full support | Same as Chrome |
-| Brave   | Full support | Same as Chrome |
-| Opera   | Partial | No new tab override, no side panel, no tab groups. Icon click opens dashboard. |
+Google Chrome only. Other Chromium browsers are not tested or supported.
 
 ## Permissions
 
@@ -51,8 +46,6 @@ Load the unpacked extension from `.output/chrome-mv3/` in `chrome://extensions` 
 | `tabGroups` | Read and create Chrome tab groups |
 | `storage` | Persist settings and saved sessions locally |
 | `alarms` | Auto-suspend inactive tabs on a timer |
-| `sidePanel` | Render the side panel UI |
-| `contextMenus` | "Open Tab Manager" in extension icon right-click menu |
 | `declarativeNetRequest` | Strip Origin header for AI API CORS |
 
 Host permissions for `api.openai.com` and `api.anthropic.com` are used only when you configure an API key for the optional AI feature.

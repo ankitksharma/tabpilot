@@ -21,17 +21,71 @@ export async function moveTab(
   tabId: number,
   windowId: number,
   index: number,
+  groupId?: number,
 ): Promise<void> {
-  // Ungroup the tab first — Chrome disallows moves that break group continuity
   const tab = await chrome.tabs.get(tabId);
-  if (tab.groupId > 0) {
+  const sourceGroup = tab.groupId > 0 ? tab.groupId : 0;
+  const targetGroup = groupId && groupId > 0 ? groupId : 0;
+
+  // Ungroup when the destination is ungrouped or a different group; staying
+  // within the same group is the case we want to preserve.
+  if (sourceGroup !== 0 && sourceGroup !== targetGroup) {
     await chrome.tabs.ungroup(tabId);
   }
+
   try {
     await chrome.tabs.move(tabId, { windowId, index });
   } catch {
-    // Target index may land inside another group — fall back to end of window
+    // Target index may collide with another group's continuity guard.
     await chrome.tabs.move(tabId, { windowId, index: -1 });
+  }
+
+  if (targetGroup !== 0 && sourceGroup !== targetGroup) {
+    try {
+      await chrome.tabs.group({ tabId, groupId: targetGroup });
+    } catch {
+      // Target group may have been removed mid-drag.
+    }
+  }
+}
+
+export async function moveTabs(
+  tabIds: number[],
+  windowId: number,
+  index: number,
+  groupId?: number,
+): Promise<void> {
+  if (tabIds.length === 0) return;
+
+  // Ungroup any source tabs that aren't already in the destination group.
+  const targetGroup = groupId && groupId > 0 ? groupId : 0;
+  const tabs = await Promise.all(tabIds.map((id) => chrome.tabs.get(id)));
+  const toUngroup = tabs
+    .filter((t) => t.groupId > 0 && t.groupId !== targetGroup)
+    .map((t) => t.id!)
+    .filter((id): id is number => typeof id === "number");
+  if (toUngroup.length > 0) {
+    await chrome.tabs.ungroup(toUngroup);
+  }
+
+  try {
+    await chrome.tabs.move(tabIds, { windowId, index });
+  } catch {
+    await chrome.tabs.move(tabIds, { windowId, index: -1 });
+  }
+
+  if (targetGroup !== 0) {
+    const toGroup = tabIds.filter((id) => {
+      const t = tabs.find((x) => x.id === id);
+      return !t || t.groupId !== targetGroup;
+    });
+    if (toGroup.length > 0) {
+      try {
+        await chrome.tabs.group({ tabIds: toGroup, groupId: targetGroup });
+      } catch {
+        // Target group may have been removed mid-drag.
+      }
+    }
   }
 }
 

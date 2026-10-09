@@ -23,10 +23,10 @@
 </head>
 <body>
   <h1>Privacy Policy</h1>
-  <p class="subtitle">TabPilot — Window & Tab Manager for Chrome<br>Last updated: March 22, 2026</p>
+  <p class="subtitle">TabPilot — Window & Tab Manager for Chrome<br>Last updated: October 9, 2026</p>
 
   <h2>Summary</h2>
-  <p>TabPilot does not collect, store, or transmit any personal data. All extension data stays on your device in Chrome's local storage.</p>
+  <p>TabPilot does not collect any personal data. The developer operates no servers and receives no data from the extension. Extension data is kept in Chrome's built-in extension storage on your device (and, for settings, in Chrome's own sync if you have Chrome Sync enabled).</p>
 
   <h2>Data Collection</h2>
   <p>TabPilot collects <strong>no user data</strong>. Specifically:</p>
@@ -39,21 +39,25 @@
     <li>No crash reports</li>
   </ul>
 
-  <h2>Local Storage</h2>
-  <p>TabPilot stores the following data locally on your device using <code>chrome.storage.local</code>:</p>
+  <h2>Data Stored by the Extension</h2>
+  <p>TabPilot stores the following on your device using <code>chrome.storage.local</code>:</p>
   <ul>
-    <li>User preferences (theme, layout, auto-suspend timer settings)</li>
     <li>Saved session projects (window and tab URLs/titles)</li>
+    <li>Duplicate-detection results and AI grouping suggestions</li>
     <li>AI provider configuration (provider choice and API key, if configured)</li>
+  </ul>
+  <p>TabPilot stores the following using <code>chrome.storage.sync</code>, which Chrome synchronizes across your signed-in browsers through your Google account if Chrome Sync is enabled:</p>
+  <ul>
+    <li>User preferences (such as the auto-suspend timer)</li>
     <li>Custom routing rules for tab grouping</li>
   </ul>
-  <p>This data never leaves your device unless you explicitly use the export feature, which saves a file to your local filesystem.</p>
+  <p>TabPilot never sends this data to the developer or any server operated by the developer. Export saves a file to your local filesystem only when you choose to export.</p>
 
   <h2>AI Feature (Optional)</h2>
   <p>TabPilot includes an optional AI-powered tab grouping feature. If you choose to use it:</p>
   <ul>
-    <li>You provide your own API key for OpenAI or Anthropic, or use Chrome's built-in AI (no key required)</li>
-    <li>TabPilot sends <strong>only tab titles and domain names</strong> to the AI provider you configure</li>
+    <li>You provide your own API key for OpenAI or Anthropic, or select Chrome's built-in on-device AI where available (no data leaves the browser)</li>
+    <li>TabPilot sends <strong>only tab titles and domain names</strong> (no full URLs) to the AI provider you configure</li>
     <li>No page content, cookies, browsing history, or personal data is transmitted</li>
     <li>API calls go directly from your browser to the provider — TabPilot has no intermediary server</li>
     <li>Your API key is stored locally and never shared with TabPilot or any third party</li>
@@ -67,12 +71,11 @@
     <li><code>tabGroups</code> — read and create Chrome tab groups</li>
     <li><code>storage</code> — persist settings and saved sessions locally</li>
     <li><code>alarms</code> — schedule auto-suspension of inactive tabs</li>
-    <li><code>sidePanel</code> — render the side panel UI</li>
-    <li><code>declarativeNetRequest</code> — modify request headers for AI API calls (CORS)</li>
+    <li><code>declarativeNetRequest</code> — remove the Origin header on requests to the AI APIs you configure (CORS)</li>
   </ul>
 
   <h2>Third-Party Services</h2>
-  <p>TabPilot does not integrate with any third-party analytics, advertising, or tracking services. The only external network requests are to AI API endpoints (OpenAI or Anthropic) when you explicitly configure and use the AI feature with your own API key.</p>
+  <p>TabPilot does not integrate with any third-party analytics, advertising, or tracking services. The only requests TabPilot itself makes are to AI API endpoints (OpenAI or Anthropic) when you explicitly configure and use the AI feature with your own API key. To display tab icons, the dashboard loads each open tab's favicon from the address the website provides, the same way Chrome's tab strip does.</p>
 
   <h2>Data Sharing</h2>
   <p>TabPilot does not sell, share, or transfer any user data to third parties. There is no user data to share.</p>
