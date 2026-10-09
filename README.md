@@ -5,7 +5,8 @@ Window & Tab Manager for Chrome, Edge, Brave, and other Chromium browsers.
 ## Features
 
 - **Bird's-eye dashboard** — see every tab across all windows in a multi-column layout
-- **Side panel** — vertical tab bar grouped by domain, like Arc but for Chrome
+- **Side panel** — search and filter the current window's tabs (audio, suspended, ungrouped)
+- **Organize Chrome's tab strip** — group tabs into native Chrome tab groups by site or routing rules, sort A–Z or by site, collapse inactive groups, undo; works with Chrome's native vertical tabs
 - **Drag-and-drop** — reorder tabs, move between windows, or drop to create a new window
 - **Session projects** — save/restore workspaces with tabs suspended to avoid reload storms
 - **Tab suspension** — suspend tabs manually or automatically after inactivity to free RAM
@@ -42,6 +43,7 @@ Load the unpacked extension from `.output/chrome-mv3/` in `chrome://extensions` 
 | Edge    | Full support | Same as Chrome |
 | Brave   | Full support | Same as Chrome |
 | Opera   | Partial | No new tab override, no side panel, no tab groups. Icon click opens dashboard. |
+| Dia, Arc | Partial | Only loaded tabs are exposed to extensions; sleeping sidebar tabs are not visible. |
 
 ## Permissions
 

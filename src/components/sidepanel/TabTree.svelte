@@ -38,7 +38,9 @@
     if (!hasAnyGroup) return [];
     const segs: Segment[] = [];
     let current: Segment | null = null;
-    for (const tab of tabs) {
+    // Incremental events can leave the list briefly out of strip order.
+    const ordered = [...tabs].sort((a, b) => a.index - b.index);
+    for (const tab of ordered) {
       const gid = tab.groupId > 0 ? tab.groupId : -1;
       if (!current || current.groupId !== gid) {
         const info = gid !== -1 ? (groupMap.get(gid) ?? null) : null;
@@ -102,7 +104,8 @@
 <div class="flex flex-col py-1">
   {#if hasAnyGroup}
     <!-- Chrome tab groups -->
-    {#each segments as seg, i (seg.groupId === -1 ? `ungrouped-${i}` : `group-${seg.groupId}`)}
+    <!-- Index in the key: mid-regroup, one group can briefly form two segments. -->
+    {#each segments as seg, i (`${i}:${seg.groupId}`)}
       {#if seg.kind === "group" && seg.groupInfo}
         {@const key = `chrome:${seg.groupId}`}
         {@const color = GROUP_COLORS[seg.groupInfo.color] ?? 'var(--text-muted)'}

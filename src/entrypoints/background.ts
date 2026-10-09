@@ -4,11 +4,13 @@ import {
   closeTab,
   closeTabs,
   moveTab,
+  moveTabs,
   discardTab,
   muteTab,
   pinTab,
   groupTabs,
 } from "../lib/chrome/tabs";
+import { organizeWindow, undoOrganize, hasOrganizeUndo } from "../lib/chrome/organize";
 import { broadcastToUI } from "../lib/messaging/protocol";
 import {
   chromeTabToTabInfo,
@@ -257,17 +259,25 @@ export default defineBackground(() => {
   console.log("[TabPilot] Background service worker initialized");
 });
 
+async function buildFullState(): Promise<FullStatePayload> {
+  const windows = await getAllWindows();
+  const groups = HAS_TAB_GROUPS
+    ? (await chrome.tabGroups.query({})).map(chromeTabGroupToInfo)
+    : [];
+  return { windows, tabGroups: groups };
+}
+
+async function broadcastFullState(): Promise<void> {
+  const payload = await buildFullState();
+  broadcastToUI({ type: "FULL_STATE", payload });
+}
+
 async function handleMessage(
   message: DashboardMessage,
-): Promise<FullStatePayload | void> {
+): Promise<unknown> {
   switch (message.type) {
-    case "GET_FULL_STATE": {
-      const windows = await getAllWindows();
-      const groups = HAS_TAB_GROUPS
-        ? (await chrome.tabGroups.query({})).map(chromeTabGroupToInfo)
-        : [];
-      return { windows, tabGroups: groups };
-    }
+    case "GET_FULL_STATE":
+      return buildFullState();
     case "ACTIVATE_TAB":
       return activateTab(message.tabId);
     case "CLOSE_TAB":
@@ -275,9 +285,26 @@ async function handleMessage(
     case "CLOSE_WINDOW":
       return closeWindow(message.windowId);
     case "MOVE_TAB":
-      return moveTab(message.tabId, message.windowId, message.index);
+      await moveTab(
+        message.tabId,
+        message.windowId,
+        message.index,
+        message.groupId,
+      );
+      await broadcastFullState();
+      return;
+    case "MOVE_TABS":
+      await moveTabs(
+        message.tabIds,
+        message.windowId,
+        message.index,
+        message.groupId,
+      );
+      await broadcastFullState();
+      return;
     case "CREATE_WINDOW":
       await createWindow(message.tabIds);
+      await broadcastFullState();
       return;
     case "DISCARD_TAB":
       return discardTab(message.tabId);
@@ -326,6 +353,19 @@ async function handleMessage(
         message.color as chrome.tabGroups.ColorEnum | undefined,
       );
       return;
+    case "ORGANIZE_WINDOW": {
+      if (!HAS_TAB_GROUPS) throw new Error("Tab groups not supported in this browser");
+      const result = await organizeWindow(message.windowId, message.action);
+      await broadcastFullState();
+      return result;
+    }
+    case "UNDO_ORGANIZE": {
+      const undone = await undoOrganize(message.windowId);
+      await broadcastFullState();
+      return { undone };
+    }
+    case "HAS_ORGANIZE_UNDO":
+      return { available: await hasOrganizeUndo(message.windowId) };
     case "AI_CLUSTER_TABS": {
       const provider = createProvider(message.config as AIConfig);
       if (!provider) throw new Error("No AI provider configured");

@@ -33,14 +33,6 @@ Use these when filling out the CWS submission form. Each permission requires a j
 ### `https://api.anthropic.com/*`
 **Justification:** Used only when the user explicitly configures an Anthropic API key for the optional AI tab grouping feature. Same data scope as OpenAI — only tab titles and domain names.
 
-## Optional Permissions
-
-### `scripting` (optional)
-**Justification:** Used for tab suspension. When suspending a tab, TabPilot may inject a minimal script to capture the page state before replacing it with a lightweight suspended page. Only requested when the user first uses the suspend feature.
-
-### `<all_urls>` (optional host permission)
-**Justification:** Required only for tab suspension to work on all pages. Without this, suspension is limited to pages matching the default host permissions. Only requested when the user enables suspension.
-
 ## Data Use Disclosure
 
 - **Personally identifiable information:** Not collected

@@ -1,5 +1,6 @@
 <script lang="ts">
   import TabTree from "../../components/sidepanel/TabTree.svelte";
+  import OrganizeBar from "../../components/sidepanel/OrganizeBar.svelte";
   import type { TabInfo, TabGroupInfo } from "../../types/tab";
   import { chromeTabGroupToInfo } from "../../types/tab";
   import type { BackgroundMessage, FullStatePayload } from "../../types/messages";
@@ -8,27 +9,46 @@
   let tabGroups = $state<TabGroupInfo[]>([]);
   let loading = $state(true);
   let searchQuery = $state("");
+  let filter = $state<TabFilter>("all");
+  // The window this side panel is attached to.
+  let windowId = $state(-1);
+  const hasTabGroups = typeof chrome.tabGroups !== "undefined";
+
+  type TabFilter = "all" | "audible" | "suspended" | "ungrouped";
+  const FILTERS: Record<TabFilter, (t: TabInfo) => boolean> = {
+    all: () => true,
+    audible: (t) => t.audible || t.mutedInfo.muted,
+    suspended: (t) => t.discarded,
+    ungrouped: (t) => !t.pinned && t.groupId <= 0,
+  };
 
   const filteredTabs = $derived.by(() => {
-    if (!searchQuery.trim()) return tabs;
-    const q = searchQuery.toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     return tabs.filter(
       (t) =>
-        t.title.toLowerCase().includes(q) ||
-        t.url.toLowerCase().includes(q),
+        FILTERS[filter](t) &&
+        (!q || t.title.toLowerCase().includes(q) || t.url.toLowerCase().includes(q)),
     );
   });
+
+  function tabsOfOwnWindow(payload: FullStatePayload): TabInfo[] {
+    const own = payload.windows.find((w) => w.id === windowId);
+    const fallback = payload.windows.find((w) => w.focused) ?? payload.windows[0];
+    return (own ?? fallback)?.tabs ?? [];
+  }
 
   async function loadTabs() {
     loading = true;
     try {
+      windowId = (await chrome.windows.getCurrent()).id ?? -1;
+    } catch {
+      windowId = -1;
+    }
+    try {
       const response: FullStatePayload = await chrome.runtime.sendMessage({
         type: "GET_FULL_STATE",
       });
-      if (response?.windows) {
-        const focusedWindow = response.windows.find((w) => w.focused);
-        tabs = focusedWindow?.tabs ?? response.windows[0]?.tabs ?? [];
-      }
+      if (response?.windows) tabs = tabsOfOwnWindow(response);
     } catch {
       // Fallback: query tabs directly
       const allTabs = await chrome.tabs.query({ currentWindow: true });
@@ -71,8 +91,7 @@
 
     switch (message.type) {
       case "FULL_STATE": {
-        const focused = message.payload.windows.find((w) => w.focused);
-        tabs = focused?.tabs ?? message.payload.windows[0]?.tabs ?? [];
+        tabs = tabsOfOwnWindow(message.payload);
         tabGroups = message.payload.tabGroups ?? [];
         break;
       }
@@ -95,7 +114,7 @@
       case "TAB_UPDATED": {
         const tab = message.payload.tab;
         // Only care about tabs in our window
-        if (tabs.length > 0 && tab.windowId !== tabs[0]?.windowId) break;
+        if (tab.windowId !== (windowId >= 0 ? windowId : tabs[0]?.windowId)) break;
         const idx = tabs.findIndex((t) => t.id === tab.id);
         if (idx >= 0) {
           tabs[idx] = tab;
@@ -152,8 +171,19 @@
       class="w-full bg-transparent text-xs outline-none"
       style="color: var(--text-primary);"
     />
+    <select
+      bind:value={filter}
+      class="shrink-0 rounded bg-transparent text-[11px] outline-none"
+      style="color: var(--text-muted);"
+      aria-label="Filter tabs"
+    >
+      <option value="all">All</option>
+      <option value="audible">Audio</option>
+      <option value="suspended">Suspended</option>
+      <option value="ungrouped">Ungrouped</option>
+    </select>
     <span class="shrink-0 text-xs" style="color: var(--text-muted);">
-      {tabs.length}
+      {filteredTabs.length === tabs.length ? tabs.length : `${filteredTabs.length}/${tabs.length}`}
     </span>
     <button
       onclick={() => chrome.tabs.create({ url: chrome.runtime.getURL("/newtab.html") })}
@@ -167,6 +197,10 @@
       </svg>
     </button>
   </div>
+
+  {#if hasTabGroups}
+    <OrganizeBar {windowId} />
+  {/if}
 
   <div class="flex-1 overflow-y-auto">
     {#if loading}

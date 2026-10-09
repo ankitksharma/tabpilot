@@ -1,4 +1,5 @@
 import type { TabInfo, TabGroupInfo, WindowInfo } from "./tab";
+import type { OrganizeAction } from "../lib/chrome/organize";
 
 // --- Background → Dashboard messages ---
 
@@ -64,7 +65,20 @@ export type DashboardMessage =
   | { type: "ACTIVATE_TAB"; tabId: number }
   | { type: "CLOSE_TAB"; tabId: number }
   | { type: "CLOSE_WINDOW"; windowId: number }
-  | { type: "MOVE_TAB"; tabId: number; windowId: number; index: number }
+  | {
+      type: "MOVE_TAB";
+      tabId: number;
+      windowId: number;
+      index: number;
+      groupId?: number;
+    }
+  | {
+      type: "MOVE_TABS";
+      tabIds: number[];
+      windowId: number;
+      index: number;
+      groupId?: number;
+    }
   | { type: "CREATE_WINDOW"; tabIds: number[] }
   | { type: "DISCARD_TAB"; tabId: number }
   | { type: "MUTE_TAB"; tabId: number; muted: boolean }
@@ -75,6 +89,9 @@ export type DashboardMessage =
   | { type: "REOPEN_TABS"; tabs: { url: string; windowId?: number }[] }
   | { type: "REOPEN_WINDOW"; urls: string[] }
   | { type: "GROUP_TABS"; tabIds: number[]; title: string; color?: string }
+  | { type: "ORGANIZE_WINDOW"; windowId: number; action: OrganizeAction }
+  | { type: "UNDO_ORGANIZE"; windowId: number }
+  | { type: "HAS_ORGANIZE_UNDO"; windowId: number }
   | {
       type: "AI_CLUSTER_TABS";
       tabs: { id: number; title: string; domain: string }[];

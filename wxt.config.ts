@@ -16,8 +16,6 @@ export default defineConfig({
     side_panel: {
       default_path: "sidepanel.html",
     },
-    optional_permissions: ["scripting"],
-    optional_host_permissions: ["<all_urls>"],
     commands: {
       "open-dashboard": {
         suggested_key: { default: "Ctrl+Shift+M", mac: "Command+Shift+M" },

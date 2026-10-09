@@ -58,6 +58,20 @@
     return m;
   });
 
+  // Defensive: chrome event bursts during a move can briefly leave duplicate
+  // tab IDs in window.tabs before FULL_STATE converges. A keyed {#each} on
+  // tab.id throws if duplicates appear, so we filter them out here.
+  const dedupedTabs = $derived.by((): TabInfo[] => {
+    const seen = new Set<number>();
+    const out: TabInfo[] = [];
+    for (const t of window.tabs) {
+      if (t.id <= 0 || seen.has(t.id)) continue;
+      seen.add(t.id);
+      out.push(t);
+    }
+    return out;
+  });
+
   // Segments: consecutive runs of tabs sharing the same groupId (or ungrouped)
   interface Segment {
     kind: "group" | "ungrouped";
@@ -71,7 +85,7 @@
     const segs: Segment[] = [];
     let current: Segment | null = null;
     const NONE = -1; // chrome.tabGroups.TAB_GROUP_ID_NONE
-    for (const tab of window.tabs) {
+    for (const tab of dedupedTabs) {
       const gid = tab.groupId > 0 ? tab.groupId : NONE;
       if (!current || current.groupId !== gid) {
         const info = gid !== NONE ? (groupMap.get(gid) ?? null) : null;
@@ -99,7 +113,7 @@
     if (search.sortMode !== "domain") return [];
     const groups: DomainGroup[] = [];
     let current: DomainGroup | null = null;
-    for (const tab of window.tabs) {
+    for (const tab of dedupedTabs) {
       const d = getDomain(tab.url);
       if (!current || current.domain !== d) {
         current = { domain: d, favicon: tab.favIconUrl, tabs: [] };
@@ -121,6 +135,7 @@
   <div
     class="flex flex-1 flex-col gap-0.5 p-2"
     data-window-id={window.id}
+    data-window-root="true"
     use:sortableAction={{ windowId: window.id }}
   >
     {#if search.sortMode === "domain" && domainGroups.length > 0}
@@ -236,7 +251,12 @@
               </button>
             </div>
             {#if !isCollapsed(groupKey)}
-              <div class="flex flex-col gap-0.5 pb-0.5">
+              <div
+                class="flex flex-col gap-0.5 pb-0.5"
+                data-window-id={window.id}
+                data-group-id={seg.groupId}
+                use:sortableAction={{ windowId: window.id }}
+              >
                 {#each seg.tabs as tab (tab.id)}
                   <TabCard {tab} />
                 {/each}
@@ -251,12 +271,12 @@
       {/each}
     {:else}
       <!-- Flat list (no groups) -->
-      {#each window.tabs as tab (tab.id)}
+      {#each dedupedTabs as tab (tab.id)}
         <TabCard {tab} />
       {/each}
     {/if}
 
-    {#if window.tabs.length === 0}
+    {#if dedupedTabs.length === 0}
       <div
         class="py-8 text-center text-sm"
         style="color: var(--text-muted);"
